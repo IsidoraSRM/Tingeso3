@@ -1,0 +1,37 @@
+.fc .fc-button,
+.fc-button-primary {
+  background-color: #303030 !important; /* celeste */
+  color: #fff !important;
+  border: none; 
+}
+
+.fc .fc-button-active,
+.fc .fc-button.fc-button-active,
+.fc .fc-button-primary.fc-button-active {
+  background-color: #C98F51 !important;
+  border: none; 
+
+}
+.fc .fc-event,
+.fc-event-dot,
+.fc-event-title {
+  color: #3A3A4B !important;
+  font-size: 0.6rem !important;
+  border-color: #3A3A4B;
+  font-weight: bold !important;
+}
+.fc-event-time {
+  color: #3A3A4B !important;
+  font-size: 0.6rem !important;
+  border-color: #3A3A4B;
+  font-weight: bold !important;
+}
+
+/*
+#F4F5F5 blanco
+#77B8B9 celeste
+#CA5833 rojo
+#C98F51 naranja
+#3A3A4B gris oscuro
+
+*/

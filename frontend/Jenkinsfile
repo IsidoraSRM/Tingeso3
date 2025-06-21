@@ -1,0 +1,33 @@
+pipeline{
+    agent any
+    stages{
+        stage("Build Frontend"){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/IsidoraSRM/Tingeso']])
+                dir("frontend"){
+                    bat "npm install"
+                    bat "npm run build"
+                }
+            }
+        }
+        stage("Build and Push Docker Image"){
+            steps{
+                dir("frontend"){
+                    script{
+                        try {
+                            withEnv(['DOCKER_HOST=tcp://localhost:2375']) {
+                                withDockerRegistry(credentialsId: 'docker-credentials'){
+                                    bat "docker build -t isirm/tingeso-frontend ."
+                                    bat "docker push isirm/tingeso-frontend"
+                                }
+                            }
+                        } catch (Exception e) {
+                            echo "Docker host is not available: ${e.message}"
+                            currentBuild.result = 'UNSTABLE'
+                        }
+                    }                    
+                }
+            }
+        }
+    }
+}

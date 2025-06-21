@@ -1,0 +1,100 @@
+.formContainer {
+    border: 2px solid #A3320A; /* Borde del formulario */
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 1040px; /* Ancho máximo para el formulario */
+    margin: 20px auto; /* margen vertical */
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),  0 0 20px #A3320A;
+    background-color: #f4f5f500; /* Fondo blanco */
+    
+}
+
+/* Contenedor principal */
+.formContainer {
+    padding: 20px;
+    font-family: 'Outfit', sans-serif;
+  }
+
+
+
+/* Contenedor principal del formulario */
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr repeat(auto-fill, minmax(300px, 1fr)); /* Una columna fija y luego columnas dinámicas */
+    gap: 20px; /* Espacio entre columnas y filas */
+    align-items: start; /* Alinea los elementos en la parte superior */
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Contenedor de cada formulario de cliente */
+.customerFields {
+    
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f4f5f500;
+    font-family: 'Outfit', sans-serif;
+    
+}
+.customerFields h3{
+    
+    margin-top: 0px; /* alinear con datos reserva */
+}
+
+/* Estilo para el contenedor de la información de la reserva */
+.formGrid > div:first-child {
+    grid-column: 1; 
+}  
+  
+  /* Contenedor de los formularios de clientes */
+.customersContainer {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los formularios se ajusten si no hay espacio horizontal */
+    gap: 20px; /* Espaciado entre formularios */
+    justify-content: flex-start; 
+    align-items: flex-start; 
+  }
+  
+
+
+.customerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Espacio entre campos */
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; /* Espacio entre columnas */
+  }
+  
+  .formGrid > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+h1 {
+    text-shadow: 0 2px 8px rgb(255, 255, 255); ;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #303030; 
+}
+
+.customerForm textField {
+    color:#050505;
+    font-weight: bold;
+    font-family: 'Outfit', sans-serif;
+}
+
+
+
+/*
+#F4F5F5 blanco
+#77B8B9 celeste
+#CA5833 rojo
+#C98F51 naranja
+#3A3A4B gris oscuro
+
+*/
+
