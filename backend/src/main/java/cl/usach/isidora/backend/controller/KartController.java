@@ -3,7 +3,8 @@ package cl.usach.isidora.backend.controller;
 
 import cl.usach.isidora.backend.entities.KartEntity;
 import cl.usach.isidora.backend.services.KartService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,18 +16,22 @@ import java.util.List;
 @RequestMapping("api/kart")
 @CrossOrigin
 public class KartController {
-    @Autowired
-    private KartService kartService;
+    
+    private static final Logger logger = LoggerFactory.getLogger(KartController.class);
+    private final KartService kartService;
+    
+    public KartController(KartService kartService) {
+        this.kartService = kartService;
+    }
 
     @GetMapping("/all")
     public List<KartEntity> getAllKarts() {
         List<KartEntity> karts = kartService.getAllKarts();
         
-        System.out.println("Datos recuperados: ");
-        karts.forEach(k -> System.out.println(
-                "ID: " + k.getId_kart() +
-                        ", Code: " + k.getCode() +
-                        ", Model: " + k.getModel()
+        logger.info("Datos recuperados: ");
+        karts.forEach(k -> logger.info(
+                "ID: {}, Code: {}, Model: {}",
+                k.getId_kart(), k.getCode(), k.getModel()
         ));
         return karts;
     }

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -9,13 +9,11 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
-import { useEffect } from 'react';
 import tariffService from '../../services/tariff';
 
 
 export default function PricingTable() {
-  const [tariff, setTariffs] = useState([]);
+  const [tariffs, setTariffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -59,7 +57,7 @@ export default function PricingTable() {
       <Table sx={{ minWidth: 650 }} aria-label="simple table"  >
         <TableHead>
           <TableRow>
-            <TableCell aling = "center" sx={{ fontWeight: 'bold', fontSize: '18px' }} >Número de vueltas o tiempo
+            <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }} >Número de vueltas o tiempo
             máximo permitido</TableCell>
             <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }}>Precios Regulares</TableCell>
             <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }}>Duración total de la
@@ -68,9 +66,9 @@ export default function PricingTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tariff.map((tariff) => (
+          {tariffs.map((tariff) => (
             <TableRow
-              key=  {tariff.laps}
+              key={tariff.laps}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row" sx={{ fontSize: '16px' }} >

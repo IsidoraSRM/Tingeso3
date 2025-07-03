@@ -2,7 +2,6 @@ package cl.usach.isidora.backend.controller;
 
 import cl.usach.isidora.backend.entities.TariffEntity;
 import cl.usach.isidora.backend.services.TariffService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,8 +10,12 @@ import java.util.List;
 @RequestMapping("api/tariff")
 @CrossOrigin
 public class TariffController {
-    @Autowired
-    TariffService tariffService;
+    
+    private final TariffService tariffService;
+    
+    public TariffController(TariffService tariffService) {
+        this.tariffService = tariffService;
+    }
 
     @GetMapping("/all")
     public List<TariffEntity> getAllTariffs() {
@@ -21,7 +24,7 @@ public class TariffController {
 
     @GetMapping("/ByMinute")
     public TariffEntity getTariffEntityByMinutes(@RequestParam Integer minutes) {
-        return tariffService.getTariffEntityByMax_minutes(minutes);
+        return tariffService.getTariffEntityByMaxMinutes(minutes);
     }
 
 }

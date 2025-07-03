@@ -4,17 +4,10 @@
     padding: 20px;
     max-width: 1040px; /* Ancho máximo para el formulario */
     margin: 20px auto; /* margen vertical */
-
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),  0 0 20px #A3320A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 20px #A3320A;
     background-color: #f4f5f500; /* Fondo blanco */
-    
-}
-
-/* Contenedor principal */
-.formContainer {
-    padding: 20px;
     font-family: 'Outfit', sans-serif;
-  }
+}
 
 
 
@@ -63,26 +56,16 @@
     gap: 16px; /* Espacio entre campos */
 }
 
-.formGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    gap: 20px; /* Espacio entre columnas */
-  }
-  
-  .formGrid > div {
-    display: flex;
-    flex-direction: column;
-  }
-
 h1 {
-    text-shadow: 0 2px 8px rgb(255, 255, 255); ;
+    text-shadow: 0 2px 8px rgb(255, 255, 255);
     text-align: center;
     margin-bottom: 20px;
     color: #303030; 
 }
 
-.customerForm textField {
-    color:#050505;
+/* Estilo para TextField de Material UI */
+.customerForm .MuiTextField-root {
+    color: #050505;
     font-weight: bold;
     font-family: 'Outfit', sans-serif;
 }

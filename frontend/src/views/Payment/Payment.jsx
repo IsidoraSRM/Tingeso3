@@ -23,7 +23,7 @@ const Payment = () => {
 
     setLoading(true);
     try {
-      const response = await reservationService.sendConfirmationEmail(reservationId);
+      await reservationService.sendConfirmationEmail(reservationId);
       setNotification({
         open: true,
         message: 'Reserva confirmada. Se ha enviado un correo de confirmación.',

@@ -2,7 +2,8 @@ package cl.usach.isidora.backend.controller;
 
 import cl.usach.isidora.backend.services.CustomerService;
 import cl.usach.isidora.backend.entities.CustomerEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,19 +13,25 @@ import java.util.List;
 @CrossOrigin
 public class CustomerController {
 
-
-    @Autowired
-    private CustomerService customerService;
+    private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
+    private final CustomerService customerService;
+    
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
 
     @GetMapping("/all")
     public List<CustomerEntity> getAllCustomers() {
-        System.out.println(customerService.getAllCustomers().get(0).getBirthdate().toString());
-        return customerService.getAllCustomers();
+        List<CustomerEntity> customers = customerService.getAllCustomers();
+        if (!customers.isEmpty()) {
+            logger.info("First customer birthdate: {}", customers.get(0).getBirthdate());
+        }
+        return customers;
     }
 
     @PostMapping("/create")
     public void createCustomer(@RequestBody CustomerEntity customer) {
-        System.out.println("Cliente recibido: " + customer);
+        logger.info("Cliente recibido: {}", customer);
         customerService.createCustomer(customer); // Llama al servicio para guardar el cliente
     }
 }

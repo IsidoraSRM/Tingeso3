@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, MenuItem, Alert, Snackbar, Stepper, Step, StepLabel, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
-import httpCommon from '../../http-common';
 import tariffService from '../../services/tariff';
 import reservationService from '../../services/reservation';
 import './CustomerFrom.css';
@@ -45,6 +44,14 @@ const CustomerFrom = () => {
   const [loading, setLoading] = useState(false);
 
 const handleConfirmation = async () => {
+  if (!reservationId) {
+    setNotification({
+      open: true,
+      message: 'No se encontró el ID de la reserva.',
+      severity: 'error'
+    });
+    return;
+  }
   setLoading(true);
   try {
     await reservationService.sendConfirmationEmail(reservationId);
@@ -54,10 +61,10 @@ const handleConfirmation = async () => {
       severity: 'success'
     });
     // Opcional: puedes redirigir o resetear el formulario aquí
-  } catch (error) {
+  } catch (confirmError) {
     setNotification({
       open: true,
-      message: 'Error al confirmar la reserva',
+      message: 'Error al confirmar la reserva: ' + (confirmError.response?.data?.error || confirmError.message),
       severity: 'error'
     });
   } finally {
@@ -112,14 +119,14 @@ const handleConfirmation = async () => {
   // Validación simple por paso
   const isStepValid = () => {
     if (activeStep === 0) {
-      return formData.date && formData.duration && formData.startTime && formData.groupSize;
+      return Boolean(formData.date && formData.duration && formData.startTime && formData.groupSize);
     }
     if (activeStep === 1) {
-      return formData.customers.every(
+      return Boolean(formData.customers.every(
         c => c.name && c.lastname && c.rut && c.email && c.phone && c.birthdate
-      );
+      ));
     }
-    return true;
+    return Boolean(true);
   };
 
   // Paso 2: Enviar reserva y avanzar solo si es exitosa
@@ -200,7 +207,7 @@ const handleConfirmation = async () => {
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 value={formData.date}
                 onChange={handleChange}
               />
@@ -240,7 +247,7 @@ const handleConfirmation = async () => {
                 label="Cantidad de personas"
                 name="groupSize"
                 type="number"
-                inputProps={{ max: 15, min: 1 }}
+                slotProps={{ htmlInput: { max: 15, min: 1 } }}
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -254,7 +261,7 @@ const handleConfirmation = async () => {
           {activeStep === 1 && (
             <>
               {formData.customers.map((customer, index) => (
-                <div key={index} className="customerFields">
+                <div key={`customer-${customer.email || index}-${customer.rut || index}`} className="customerFields">
                   <h3>{index + 1}.- Cliente:</h3>
                   <TextField
                     label="Nombre"
@@ -308,7 +315,7 @@ const handleConfirmation = async () => {
                     variant="outlined"
                     fullWidth
                     margin="normal"
-                    InputLabelProps={{ shrink: true }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                     value={customer.birthdate}
                     onChange={(e) => handleCustomerChange(index, e)}
                   />
@@ -338,6 +345,7 @@ const handleConfirmation = async () => {
                 <Button
                   variant="contained"
                   onClick={handleConfirmation}
+                  disabled={loading}
                   sx={{
                     minWidth: 200,
                     backgroundColor: '#77B8B9',
@@ -346,7 +354,7 @@ const handleConfirmation = async () => {
                     '&:hover': { backgroundColor: '#C98F51' }
                   }}
                 >
-                  Confirmar Reserva
+                  {loading ? 'Enviando...' : 'Confirmar Reserva'}
                 </Button>
               </Box>
             </div>

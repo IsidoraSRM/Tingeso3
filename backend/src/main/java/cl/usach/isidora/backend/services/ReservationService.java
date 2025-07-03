@@ -10,13 +10,11 @@ import cl.usach.isidora.backend.repositories.GroupSizeDscRepository;
 import cl.usach.isidora.backend.repositories.ReservationRepository;
 import cl.usach.isidora.backend.repositories.TariffRepository;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import jakarta.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -29,12 +27,12 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.ByteArrayOutputStream;
-import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -46,27 +44,39 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 @Service
 public class ReservationService {
-    @Autowired
-    private ReservationRepository reservationRepository;
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private TariffRepository tariffRepository;
-    @Autowired
-    private FrequencyDscService frequencyDscService;
-    @Autowired
-    private GroupSizeDscService groupSizeDscService;
-    @Autowired
-    private TariffService tariffService;
-    @Autowired
-    private JavaMailSender emailSender;
-    @Autowired
-    private GroupSizeDscRepository groupSizeDscRepository;
+    
+    private static final Logger logger = LoggerFactory.getLogger(ReservationService.class);
+    private final ReservationRepository reservationRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
+    private final TariffRepository tariffRepository;
+    private final FrequencyDscService frequencyDscService;
+    private final GroupSizeDscService groupSizeDscService;
+    private final TariffService tariffService;
+    private final JavaMailSender emailSender;
+    private final GroupSizeDscRepository groupSizeDscRepository;
+    
+    public ReservationService(ReservationRepository reservationRepository,
+                            CustomerRepository customerRepository,
+                            CustomerService customerService,
+                            TariffRepository tariffRepository,
+                            FrequencyDscService frequencyDscService,
+                            GroupSizeDscService groupSizeDscService,
+                            TariffService tariffService,
+                            JavaMailSender emailSender,
+                            GroupSizeDscRepository groupSizeDscRepository) {
+        this.reservationRepository = reservationRepository;
+        this.customerRepository = customerRepository;
+        this.customerService = customerService;
+        this.tariffRepository = tariffRepository;
+        this.frequencyDscService = frequencyDscService;
+        this.groupSizeDscService = groupSizeDscService;
+        this.tariffService = tariffService;
+        this.emailSender = emailSender;
+        this.groupSizeDscRepository = groupSizeDscRepository;
+    }
 
     public List<ReservationEntity> getAllReservations(){
         return reservationRepository.findAll();
@@ -150,19 +160,16 @@ public class ReservationService {
     @Transactional
     public ReservationEntity calculatePricing(ReservationEntity reservation) {
         List<CustomerEntity> customers = reservation.getCustomers();
-        List<GroupSizeDscEntity> groupSizeDscs = groupSizeDscService.getAllGroupSizeDsc();
-        List<FrequencyDscEntity> frequencyDscs = frequencyDscService.getAllFrequencyDsc();
-        double totalAmount = reservation.getBaseTariff();
 
         // Calcular los descuentos del tamaño del grupo que aplican por cliente
         List<Double> individualGroupSizeDscs = getCustomerGroup(customers,reservation);
-        System.out.println("lista de descuentos individuales por grupo: "+ individualGroupSizeDscs);
+        logger.info("Lista de descuentos individuales por grupo: {}", individualGroupSizeDscs);
         // Calcular los descuentos de frequencia que aplican por cliente
         List<Double> individualFreqDscs = getCustomerFreq(customers,reservation);
-        System.out.println("lista de descuentos individuales por frequencia: "+ individualFreqDscs);
+        logger.info("Lista de descuentos individuales por frecuencia: {}", individualFreqDscs);
         // Calcular descuento por cumpleaños
         List<Double> individualBirthDayDscs = getCustomerBirthDay(customers,reservation);
-        System.out.println("lista de descuentos individuales por cumple: "+ individualBirthDayDscs);
+        logger.info("Lista de descuentos individuales por cumpleaños: {}", individualBirthDayDscs);
         List<Double> finalDscs = new ArrayList<>();
         // compara que descuento en mejor para cada customer
         for (int i = 0; i < customers.size(); i++) {
@@ -171,16 +178,16 @@ public class ReservationService {
             double dsc3 = individualGroupSizeDscs.get(i);
             if(dsc1 > dsc2 && dsc1 >= dsc3){
                 finalDscs.add(dsc1);
-                System.out.println("descuento por frecuencia: "+ dsc1);
+                logger.info("Descuento por frecuencia: {}", dsc1);
             }else if (dsc2 > dsc1 && dsc2 > dsc3) {
                 finalDscs.add(dsc2);
-                System.out.println("descuento por cumpleagnios: "+ dsc2);
+                logger.info("Descuento por cumpleaños: {}", dsc2);
             }else if (dsc3 > dsc1 && dsc3 > dsc2) {
                 finalDscs.add(dsc3);
-                System.out.println("descuento por tamaño de grupo : "+ dsc3);
+                logger.info("Descuento por tamaño de grupo: {}", dsc3);
             }else{
                 finalDscs.add(0.0);
-                System.out.println("No hay descuento ");
+                logger.info("No hay descuento");
             }
 
         }
@@ -213,7 +220,7 @@ public class ReservationService {
 
             // Contar las visitas en el mes de los clientes
             long visitsCount = customerService.countFrequentCustomers(customer, reservation.getDate());
-            System.out.println("El cliente "+customer.getName() +"ha visistado : "+visitsCount);
+            logger.info("El cliente {} ha visitado: {}", customer.getName(), visitsCount);
             // Encontrar que descuento por frecuencia aplica
             for (FrequencyDscEntity frequency : freqDscs) {
 
@@ -234,7 +241,7 @@ public class ReservationService {
     public List<Double> getCustomerGroup(List<CustomerEntity> customers,ReservationEntity reservation) {
         List<GroupSizeDscEntity> groupDscs = groupSizeDscService.getAllGroupSizeDsc();
         List<Double> individualDscs = new ArrayList<>();
-        for (CustomerEntity customer : customers) {
+        for (int i = 0; i < customers.size(); i++) {
             // Encontrar que descuento por frecuencia aplica
             for (GroupSizeDscEntity groupSize : groupDscs) {
                 if (reservation.getGroupSize() >= groupSize.getMinGroupSize() &&
@@ -250,64 +257,65 @@ public class ReservationService {
         return individualDscs;
     }
 
-    public List<Double> getCustomerBirthDay(List<CustomerEntity> customers,ReservationEntity reservation) {
+    public List<Double> getCustomerBirthDay(List<CustomerEntity> customers, ReservationEntity reservation) {
         List<Double> individualDscs = new ArrayList<>();
         for (CustomerEntity customer : customers) {
-
-            if (customer.getBirthdate().getMonth() == reservation.getDate().getMonth()
+            // Verificar primero si la fecha de nacimiento es null
+            if (customer.getBirthdate() == null) {
+                logger.warn("La fecha de nacimiento es nula para el cliente {}", customer.getName());
+                individualDscs.add(0.0);
+            } else if (customer.getBirthdate().getMonth() == reservation.getDate().getMonth()
                     && customer.getBirthdate().getDayOfMonth() == reservation.getDate().getDayOfMonth()) {
-                System.out.println("esta de cumpleagnios");
+                logger.info("Cliente {} está de cumpleaños", customer.getName());
                 individualDscs.add(50.0);
-            }else if(customer.getBirthdate() == null){
-                System.out.println("La fecha es nula");
+            } else {
+                logger.info("Cliente {} no está de cumpleaños", customer.getName());
                 individualDscs.add(0.0);
             }
-            else{
-                System.out.println("No esta de cumpleagnios");
-                individualDscs.add(0.0);
-            }
-
-
         }
-        List<Double> finalIndvDsc = birthDayDscmax(individualDscs,reservation.getGroupSize());
-        return finalIndvDsc;
+        return birthDayDscmax(individualDscs, reservation.getGroupSize());
     }
-    public List<Double> birthDayDscmax(List<Double> individualDscs, int groupSize){
+    public List<Double> birthDayDscmax(List<Double> individualDscs, int groupSize) {
+        int maxDscs = getMaxDiscountsAllowed(groupSize);
+        int birthdayCount = countBirthdayDiscounts(individualDscs);
         
-        int count = 0;
-        int maxDscs =0;
-        if(groupSize >= 1 && groupSize < 3){
-            maxDscs = 0;
-        }else if(groupSize >= 3 && groupSize < 6 ){
-            maxDscs = 1;
-        } else if (groupSize >= 6 && groupSize < 11) {
-            maxDscs = 2;
+        if (birthdayCount > maxDscs) {
+            removeExcessBirthdayDiscounts(individualDscs, birthdayCount - maxDscs);
         }
-        for (int i = 0; i < individualDscs.size(); i++) {
-            if(individualDscs.get(i) == 50.0){
-                count++;
-            }
-        }
-        if(count > maxDscs){
-            int rest = count - maxDscs;
-            for (int j = 0; j < individualDscs.size(); j++) {
-                if(rest == 0){
-                    break;
-                }else{
-                    if(individualDscs.get(j) == 50.0) {
-                        individualDscs.set(j, 0.0);
-                        rest--;
-                    }
-                }
-            }
-        }
+        
         return individualDscs;
+    }
+    
+    private int getMaxDiscountsAllowed(int groupSize) {
+        if (groupSize >= 1 && groupSize < 3) {
+            return 0;
+        } else if (groupSize >= 3 && groupSize < 6) {
+            return 1;
+        } else if (groupSize >= 6 && groupSize < 11) {
+            return 2;
+        }
+        return 0;
+    }
+    
+    private int countBirthdayDiscounts(List<Double> individualDscs) {
+        return individualDscs.stream()
+            .mapToInt(dsc -> dsc.equals(50.0) ? 1 : 0)
+            .sum();
+    }
+    
+    private void removeExcessBirthdayDiscounts(List<Double> individualDscs, int toRemove) {
+        for (int i = 0; i < individualDscs.size() && toRemove > 0; i++) {
+            if (individualDscs.get(i).equals(50.0)) {
+                individualDscs.set(i, 0.0);
+                toRemove--;
+            }
+        }
     }
 
     public Integer getTariffByDuration(Integer duration) {
         TariffEntity tariffEntity = tariffRepository.findByMaxMinutes(duration);
     if (tariffEntity != null) {
-        System.out.println("Tarifa encontrada: " + tariffEntity.getPrice() + " para duración: " + duration);
+        logger.info("Tarifa encontrada: {} para duración: {}", tariffEntity.getPrice(), duration);
         return tariffEntity.getPrice();
     }
     
@@ -326,12 +334,12 @@ public class ReservationService {
             }
         }
         
-        System.out.println("No hay tarifa exacta. Usando la más cercana: " + 
-                          closest.getTotal_duration() + " minutos, precio: " + closest.getPrice());
+        logger.info("No hay tarifa exacta. Usando la más cercana: {} minutos, precio: {}", 
+                          closest.getTotal_duration(), closest.getPrice());
         return closest.getPrice();
     }
     
-    System.out.println("ADVERTENCIA: No se encontró ninguna tarifa, usando valor predeterminado");
+    logger.warn("ADVERTENCIA: No se encontró ninguna tarifa, usando valor predeterminado");
     return 5000; // Valor predeterminado o lanza una excepción
 
     }
@@ -412,7 +420,7 @@ public class ReservationService {
         
         // Añadir fila de IVA
         PdfPCell emptyCell = new PdfPCell(new Phrase(""));
-        emptyCell.setBorder(PdfPCell.NO_BORDER);
+        emptyCell.setBorder(Rectangle.NO_BORDER);
         
         table.addCell(emptyCell);
         table.addCell(emptyCell);
@@ -421,7 +429,7 @@ public class ReservationService {
         // Celda de texto "IVA"
         PdfPCell ivaLabelCell = new PdfPCell(new Phrase("IVA", headerFont));
         ivaLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        ivaLabelCell.setBorder(PdfPCell.NO_BORDER);
+        ivaLabelCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(ivaLabelCell);
         
         // Celda de porcentaje IVA
@@ -442,7 +450,7 @@ public class ReservationService {
         // Celda de texto "Total"
         PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD)));
         totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        totalLabelCell.setBorder(PdfPCell.NO_BORDER);
+        totalLabelCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(totalLabelCell);
         
         // Celda de valor total 
@@ -486,44 +494,50 @@ public class ReservationService {
                 // Enviar el PDF a cada cliente
                 for (CustomerEntity customer : customers) {
                     if (customer.getEmail() != null && !customer.getEmail().isEmpty()) {
-                        try{
-                        // Crear mensaje
-                        MimeMessage message = emailSender.createMimeMessage();
-                        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-                        helper.setTo(customer.getEmail());
-                        helper.setSubject("Confirmación de tu reserva");
-                        
-                        // Contenido del email
-                        String content = String.format(
-                            "Hola %s,\n\n" +
-                            "Adjunto encontrarás los detalles de tu reserva para el %s.\n\n" +
-                            "¡Gracias por reservar con nosotros!",
-                            customer.getName(),
-                            reservation.getDate()
-                        );
-                        
-                        helper.setText(content);
-                        
-                        // Adjuntar el PDF
-                        helper.addAttachment("reserva_" + reservation.getId_reservation() + ".pdf", 
-                                        new ByteArrayResource(pdfBytes));
-                        
-                        // Enviar el correo
-                        emailSender.send(message);
-                        System.out.println("Correo con PDF enviado a: " + customer.getEmail());
-                        }catch (Exception e) {
-                            System.err.println("Error al enviar correo a " + customer.getEmail() + ": " + e.getMessage());
-                            e.printStackTrace();
-                        }
+                        sendEmailToCustomer(customer, reservation, pdfBytes);
                     } 
                     
                 }
             } catch (Exception e) {
-                System.err.println("Error al generar el PDF: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Error al generar el PDF: {}", e.getMessage(), e);
             }
         } else {
-            System.out.println("La reserva no tiene clientes asociados");
+            logger.info("La reserva no tiene clientes asociados");
+        }
+    }
+
+    // Método auxiliar para enviar correo a un cliente individual
+    private void sendEmailToCustomer(CustomerEntity customer, ReservationEntity reservation, byte[] pdfBytes) {
+        try {
+            // Crear mensaje
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(customer.getEmail());
+            helper.setSubject("Confirmación de tu reserva");
+            
+            // Contenido del email
+            String content = String.format(
+                """
+                Hola %s,
+
+                Adjunto encontrarás los detalles de tu reserva para el %s.
+
+                ¡Gracias por reservar con nosotros!""",
+                customer.getName(),
+                reservation.getDate()
+            );
+            
+            helper.setText(content);
+            
+            // Adjuntar el PDF
+            helper.addAttachment("reserva_" + reservation.getId_reservation() + ".pdf", 
+                            new ByteArrayResource(pdfBytes));
+            
+            // Enviar el correo
+            emailSender.send(message);
+            logger.info("Correo con PDF enviado a: {}", customer.getEmail());
+        } catch (Exception e) {
+            logger.error("Error al enviar correo a {}: {}", customer.getEmail(), e.getMessage(), e);
         }
     }
 
@@ -551,7 +565,7 @@ public class ReservationService {
                 category.put("minutes", tariff.getMaxMinutes());
                 return category;
             })
-            .collect(Collectors.toList());
+            .toList();
         
         // Obtener los meses en el rango de fechas
         List<YearMonth> months = getMonthsBetween(startDate, endDate);
@@ -618,7 +632,7 @@ public class ReservationService {
         // Convertir meses a formato legible
         List<String> monthLabels = months.stream()
             .map(m -> m.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + m.getYear())
-            .collect(Collectors.toList());
+            .toList();
         
         // Estructurar respuesta final
         Map<String, Object> result = new HashMap<>();
@@ -662,7 +676,25 @@ public class ReservationService {
         List<GroupSizeDscEntity> groupSizeRanges = groupSizeDscRepository.findAll();
         
         // Definir las categorías (rangos de tamaño)
-        List<Map<String, Object>> categories = groupSizeRanges.stream()
+        List<Map<String, Object>> categories = createGroupSizeCategories(groupSizeRanges);
+        
+        // Obtener los meses en el rango de fechas
+        List<YearMonth> months = getMonthsBetween(startDate, endDate);
+        
+        // Crear estructura para almacenar los datos por categoría y mes
+        Map<Long, Map<YearMonth, Double>> groupSizeMonthlyRevenue = initializeGroupSizeRevenueMap(groupSizeRanges, months);
+        
+        // Procesar reservas y agrupar ingresos
+        processReservationsForGroupSizeReport(reservations, groupSizeRanges, groupSizeMonthlyRevenue);
+        
+        // Formatear datos para la respuesta
+        List<Map<String, Object>> reportData = formatGroupSizeReportData(categories, groupSizeMonthlyRevenue, months);
+        
+        return buildGroupSizeReportResult(startDate, endDate, categories, months, reportData);
+    }
+    
+    private List<Map<String, Object>> createGroupSizeCategories(List<GroupSizeDscEntity> groupSizeRanges) {
+        return groupSizeRanges.stream()
             .map(range -> {
                 Map<String, Object> category = new HashMap<>();
                 category.put("id", range.getIdGroupSizeDsc());
@@ -671,15 +703,12 @@ public class ReservationService {
                 category.put("max", range.getMaxGroupSize());
                 return category;
             })
-            .collect(Collectors.toList());
-        
-        // Obtener los meses en el rango de fechas
-        List<YearMonth> months = getMonthsBetween(startDate, endDate);
-        
-        // Crear estructura para almacenar los datos por categoría y mes
+            .toList();
+    }
+    
+    private Map<Long, Map<YearMonth, Double>> initializeGroupSizeRevenueMap(List<GroupSizeDscEntity> groupSizeRanges, List<YearMonth> months) {
         Map<Long, Map<YearMonth, Double>> groupSizeMonthlyRevenue = new HashMap<>();
         
-        // Inicializar la estructura con ceros
         for (GroupSizeDscEntity range : groupSizeRanges) {
             Map<YearMonth, Double> monthlyRevenue = new HashMap<>();
             for (YearMonth month : months) {
@@ -688,34 +717,44 @@ public class ReservationService {
             groupSizeMonthlyRevenue.put(range.getIdGroupSizeDsc(), monthlyRevenue);
         }
         
-        // Procesar reservas y agrupar ingresos
+        return groupSizeMonthlyRevenue;
+    }
+    
+    private void processReservationsForGroupSizeReport(List<ReservationEntity> reservations, 
+                                                      List<GroupSizeDscEntity> groupSizeRanges,
+                                                      Map<Long, Map<YearMonth, Double>> groupSizeMonthlyRevenue) {
         for (ReservationEntity reservation : reservations) {
             if (reservation.getGroupSize() != null && reservation.getTotalAmount() != null) {
-                // Encontrar la categoría correspondiente al tamaño de grupo
-                Optional<GroupSizeDscEntity> matchingRange = groupSizeRanges.stream()
-                    .filter(range -> 
-                        reservation.getGroupSize() >= range.getMinGroupSize() && 
-                        reservation.getGroupSize() <= range.getMaxGroupSize())
-                    .findFirst();
-                
-                if (matchingRange.isPresent()) {
-                    Long rangeId = matchingRange.get().getIdGroupSizeDsc();
-                    YearMonth month = YearMonth.from(reservation.getDate());
-                    
-                    // Actualizar ingresos para este rango y este mes
-                    Map<YearMonth, Double> monthlyRevenue = groupSizeMonthlyRevenue.get(rangeId);
-                    if (monthlyRevenue != null && month != null) {
-                        double currentRevenue = monthlyRevenue.getOrDefault(month, 0.0);
-                        monthlyRevenue.put(month, currentRevenue + reservation.getTotalAmount());
-                    }
-                }
+                updateRevenueForGroupSize(reservation, groupSizeRanges, groupSizeMonthlyRevenue);
             }
         }
+    }
+    
+    private void updateRevenueForGroupSize(ReservationEntity reservation, 
+                                          List<GroupSizeDscEntity> groupSizeRanges,
+                                          Map<Long, Map<YearMonth, Double>> groupSizeMonthlyRevenue) {
+        Optional<GroupSizeDscEntity> matchingRange = groupSizeRanges.stream()
+            .filter(range -> 
+                reservation.getGroupSize() >= range.getMinGroupSize() && 
+                reservation.getGroupSize() <= range.getMaxGroupSize())
+            .findFirst();
         
-        // Formatear datos para la respuesta
+        if (matchingRange.isPresent()) {
+            Long rangeId = matchingRange.get().getIdGroupSizeDsc();
+            YearMonth month = YearMonth.from(reservation.getDate());
+            
+            Map<YearMonth, Double> monthlyRevenue = groupSizeMonthlyRevenue.get(rangeId);
+            if (monthlyRevenue != null && month != null) {
+                double currentRevenue = monthlyRevenue.getOrDefault(month, 0.0);
+                monthlyRevenue.put(month, currentRevenue + reservation.getTotalAmount());
+            }
+        }
+    }
+    
+    private List<Map<String, Object>> formatGroupSizeReportData(List<Map<String, Object>> categories, 
+                                                               Map<Long, Map<YearMonth, Double>> groupSizeMonthlyRevenue, 
+                                                               List<YearMonth> months) {
         List<Map<String, Object>> reportData = new ArrayList<>();
-        double[] totalsByMonth = new double[months.size()];
-        double grandTotal = 0.0;
         
         for (Map<String, Object> category : categories) {
             Long rangeId = (Long) category.get("id");
@@ -728,9 +767,7 @@ public class ReservationService {
                 YearMonth month = months.get(i);
                 double revenue = monthlyRevenue.getOrDefault(month, 0.0);
                 values[i] = revenue;
-                totalsByMonth[i] += revenue;
                 categoryTotal += revenue;
-                grandTotal += revenue;
             }
             
             Map<String, Object> categoryData = new HashMap<>(category);
@@ -739,10 +776,29 @@ public class ReservationService {
             reportData.add(categoryData);
         }
         
+        return reportData;
+    }
+    
+    private Map<String, Object> buildGroupSizeReportResult(LocalDate startDate, LocalDate endDate, 
+                                                          List<Map<String, Object>> categories, 
+                                                          List<YearMonth> months,
+                                                          List<Map<String, Object>> reportData) {
         // Convertir meses a formato legible
         List<String> monthLabels = months.stream()
             .map(m -> m.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + m.getYear())
-            .collect(Collectors.toList());
+            .toList();
+        
+        // Calcular totales por mes y total general
+        double[] totalsByMonth = new double[months.size()];
+        double grandTotal = 0.0;
+        
+        for (Map<String, Object> categoryData : reportData) {
+            double[] values = (double[]) categoryData.get("values");
+            for (int i = 0; i < values.length; i++) {
+                totalsByMonth[i] += values[i];
+                grandTotal += values[i];
+            }
+        }
         
         // Estructurar respuesta final
         Map<String, Object> result = new HashMap<>();

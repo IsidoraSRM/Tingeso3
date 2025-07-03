@@ -2,7 +2,6 @@ package cl.usach.isidora.backend.repositories;
 
 import cl.usach.isidora.backend.entities.CustomerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 

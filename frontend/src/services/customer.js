@@ -1,4 +1,3 @@
-import { data } from "react-router-dom";
 import httpClient from "../http-common";
 
 const getAllCustomers = () => {

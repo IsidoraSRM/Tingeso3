@@ -4,18 +4,15 @@ import cl.usach.isidora.backend.Dto.ReservationRequestDTO;
 import cl.usach.isidora.backend.entities.CustomerEntity;
 import cl.usach.isidora.backend.entities.ReservationEntity;
 import cl.usach.isidora.backend.repositories.ReservationRepository;
-import cl.usach.isidora.backend.services.CustomerService;
 import cl.usach.isidora.backend.services.ReservationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -23,14 +20,20 @@ import java.util.Map;
 @RequestMapping("api/reservation")
 @CrossOrigin
 public class ReservationController {
-    @Autowired
-    ReservationRepository reservationRepository;
-    @Autowired
-    private ReservationService reservationService;
-    @Autowired
-    private CustomerService customerRepository;
+    
+    private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
+    private final ReservationRepository reservationRepository;
+    private final ReservationService reservationService;
+    
+    public ReservationController(ReservationRepository reservationRepository, 
+                               ReservationService reservationService) {
+        this.reservationRepository = reservationRepository;
+        this.reservationService = reservationService;
+    }
+    
+
     @GetMapping("/all")
-    public ResponseEntity<?> getAllReservations() {
+    public ResponseEntity<Object> getAllReservations() {
         try {
             
             List<ReservationEntity> reservations = reservationRepository.findAll();
@@ -44,7 +47,7 @@ public class ReservationController {
             
             return ResponseEntity.ok(reservations);
         } catch (Exception e) {
-            e.printStackTrace(); 
+            logger.error("Error al obtener reservas", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Error al obtener reservas: " + e.getMessage()));
         }
@@ -74,7 +77,7 @@ public class ReservationController {
 
     @GetMapping("/{id}/pricing")
     public ReservationEntity getReservationWithPricing(@PathVariable Long id) {
-        System.out.println("ESTE ES EL ID QUE SE ESTA PASANDO AL METODO ID: " + id);
+        logger.info("ESTE ES EL ID QUE SE ESTA PASANDO AL METODO ID: {}", id);
         ReservationEntity reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
         
@@ -86,7 +89,7 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getReservationById(@PathVariable Long id) {
+    public ResponseEntity<Object> getReservationById(@PathVariable Long id) {
         ReservationEntity reservation = reservationService.getReservationById(id);
         if (reservation == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -96,7 +99,7 @@ public class ReservationController {
     }
 
     @GetMapping("/customers/{id}")
-    public ResponseEntity<?> getCustomersByReservationId(@PathVariable Long id) {
+    public ResponseEntity<Object> getCustomersByReservationId(@PathVariable Long id) {
         ReservationEntity reservation = reservationService.getReservationById(id);
         if (reservation == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -108,7 +111,7 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}/send-mail")
-    public ResponseEntity<?> sendReservationConfirmation(@PathVariable Long id) {
+    public ResponseEntity<Object> sendReservationConfirmation(@PathVariable Long id) {
         try {
             // Verificar que la reserva existe
             ReservationEntity reservation = reservationService.getReservationById(id);
@@ -125,7 +128,7 @@ public class ReservationController {
                 "reservationId", id
             ));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error al enviar correos para reserva ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Error al enviar correos: " + e.getMessage()));
         }

@@ -33,7 +33,7 @@ const Contact = () => {
         </Typography>
 
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          <Grid size={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
               <LocationOnIcon sx={{ color: '#C98F51', fontSize: 36, mr: 2 }} />
               <Box>
@@ -49,21 +49,31 @@ const Contact = () => {
               <Box>
                 <Typography variant="h6">Teléfono</Typography>
                 <Typography variant="body1">
-                  <Link href="tel:+56912345678" underline="hover" color="inherit">
+                  <Link 
+                    href="tel:+56912345678" 
+                    underline="hover" 
+                    color="inherit"
+                    tabIndex={0}
+                    aria-label="Llamar al número +56 9 1234 5678"
+                  >
                     +56 9 1234 5678
                   </Link>
                 </Typography>
               </Box>
             </Box>
-          </Grid>
 
-          <Grid item xs={12} md={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
               <EmailIcon sx={{ color: '#C98F51', fontSize: 36, mr: 2 }} />
               <Box>
                 <Typography variant="h6">Email</Typography>
                 <Typography variant="body1">
-                  <Link href="mailto:kartingrmbusiness@gmail.com" underline="hover" color="inherit">
+                  <Link 
+                    href="mailto:kartingrmbusiness@gmail.com" 
+                    underline="hover" 
+                    color="inherit"
+                    tabIndex={0}
+                    aria-label="Enviar email a kartingrmbusiness@gmail.com"
+                  >
                     kartingrmbusiness@gmail.com
                   </Link>
                 </Typography>

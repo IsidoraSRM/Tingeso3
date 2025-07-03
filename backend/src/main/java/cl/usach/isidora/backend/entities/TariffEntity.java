@@ -1,6 +1,6 @@
 package cl.usach.isidora.backend.entities;
 
-import jakarta.annotation.Generated;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

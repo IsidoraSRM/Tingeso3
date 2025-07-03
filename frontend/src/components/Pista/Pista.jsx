@@ -19,7 +19,6 @@ const Animation = () => {
   width={570}
   height={600}
   style={{
-    filter: "drop-shadow(0 0 20px #303030)",
     filter: hover ? "drop-shadow(0 0 20px #A3320A)" : "drop-shadow(0 0 20px #303030)",
     transition: "filter 0.3s",
     animation: hover ? "vibrate 0.3s infinite linear" : "none", // vibrar con hover

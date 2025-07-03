@@ -1,21 +1,13 @@
 
 
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, Container,Button } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Box, Typography, Grid, Container, Button } from '@mui/material';
 import Pista from '../../components/Pista/Pista'; // Asegúrate de que la ruta sea correcta
-const frameCount = 10;
-const animationFrames = Array.from({ length: frameCount }, (_, i) => `/animation/Imagen${i + 1}.png`);
 
 const Home = () => {
 
-const [currentFrame, setCurrentFrame] = useState(0);
-
 useEffect(() => {
-  const interval = setInterval(() => {
-    setCurrentFrame((prevFrame) => (prevFrame + 1) % animationFrames.length);
-  }, 100); // cambia la velocidad aquí (ms por frame)
-
-  return () => clearInterval(interval);
+  // Código de animación para el futuro si es necesario
 }, []);
 
 
@@ -23,7 +15,7 @@ useEffect(() => {
   return (
     <Container maxWidth={false} sx={{ width: 1440, mx: 'auto', px: 0 }}>
       <Grid container spacing={2} columns={12} sx={{ mt: 5, mb: 4, ml: '132px', mr: '0px' }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Box
             sx={{
               p: 4,
@@ -75,11 +67,11 @@ useEffect(() => {
           </Box>
         </Grid>
        
-        <Grid item xs={12} md={6} sx={{ mt: -6, mb: 0, ml: -6, mr: 0 }}>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ mt: -6, mb: 0, ml: -6, mr: 0 }}>
                 {/* secuencia de imágenes */}
                 <Pista/>
         </Grid>
-        <Grid item xs={12} sx={{ mt: 0, mb: 0, ml: 4, mr: 6 }}>
+        <Grid size={12} sx={{ mt: 0, mb: 0, ml: 4, mr: 6 }}>
           <Box
             sx={{
               width: 1065,
@@ -118,151 +110,3 @@ useEffect(() => {
 };
 
 export default Home;
-
-
-
-// import React from 'react';
-// import { Box, Typography, Paper, Grid } from '@mui/material';
-// import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-// import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-// import PeopleIcon from '@mui/icons-material/People';
-// import BarChartIcon from '@mui/icons-material/BarChart';
-// import PaymentIcon from '@mui/icons-material/Payment';
-// import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-
-// /*
-// #F4F5F5 blanco
-// #77B8B9 celeste
-// #CA5833 rojo
-// #C98F51 naranja
-// #3A3A4B gris oscuro
-// */
-
-// const Home = () => {
-//   return (
-//     <Grid container spacing={2}>
-//       <Grid item xs={12} md={6}>
-//         <Box
-//           sx={{
-//             p: 4,
-//             backgroundColor: 'rgba(255,255,255,0.5)',
-//             borderRadius: 2,
-//             width: '100%',
-//           }}
-//         >
-//           {/* Bienvenida */}
-//           <Box sx={{
-//             backgroundColor: 'rgba(255,255,255,0.5)',
-//             marginLeft: 0,
-//             marginRight: 'auto',
-//             width: 'fit-content'
-//           }}>
-//             <Typography variant="h3" sx={{
-//               color: '#3A3A4B',
-//               mb: 2,
-//               fontWeight: 'bold'
-//             }}>
-//               ¡Bienvenido a KartingRM!
-//             </Typography>
-
-//             <Typography variant="h4" sx={{
-//               color: '#77B8B9',
-//               fontWeight: 'bold',
-//               mb: 3
-//             }}>
-//               El Mejor Karting de la Región Metropolitana
-//             </Typography>
-
-//             <Typography variant="h6" sx={{
-//               color: '#666',
-//               mb: 2
-//             }}>
-//               Vive la experiencia única de velocidad y adrenalina
-//             </Typography>
-//           </Box>
-//         </Box>
-//       </Grid>
-//       <Grid item xs={12} md={6}>
-//         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-//           <EmojiEventsIcon sx={{ color: '#C98F51', fontSize: 40, mr: 1 }} />
-//           <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#555' }}>
-//             Pistas de nivel internacional • Equipamiento de primera • Diversión garantizada
-//           </Typography>
-//           <EmojiEventsIcon sx={{ color: '#C98F51', fontSize: 40, ml: 1 }} />
-//         </Box>
-
-//         <Grid container spacing={4} justifyContent="center">
-//           {/* Tarjeta 1 */}
-//           <Grid item xs={12} sm={6} md={4}>
-//             <Paper elevation={3} sx={{
-//               p: 4,
-//               display: 'flex',
-//               flexDirection: 'column',
-//               alignItems: 'center',
-//               height: '200px'
-//             }}>
-//               <DirectionsCarIcon sx={{ fontSize: 60, color: '#77B8B9', mb: 2 }} />
-//               <Typography variant="h6">Opciones y precios</Typography>
-//               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                 Verifica las tarifas del karting
-//               </Typography>
-//             </Paper>
-//           </Grid>
-
-//           {/* Tarjeta 2 */}
-//           <Grid item xs={12} sm={6} md={4}>
-//             <Paper elevation={3} sx={{
-//               p: 4,
-//               display: 'flex',
-//               flexDirection: 'column',
-//               alignItems: 'center',
-//               height: '200px'
-//             }}>
-//               <CalendarTodayIcon sx={{ fontSize: 60, color: '#77B8B9', mb: 2 }} />
-//               <Typography variant="h6">Reservaciones</Typography>
-//               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                 Gestiona horarios y reservas
-//               </Typography>
-//             </Paper>
-//           </Grid>
-
-//           {/* Tarjeta 3 */}
-//           <Grid item xs={12} sm={6} md={4}>
-//             <Paper elevation={3} sx={{
-//               p: 4,
-//               display: 'flex',
-//               flexDirection: 'column',
-//               alignItems: 'center',
-//               height: '200px'
-//             }}>
-//               <PaymentIcon sx={{ fontSize: 60, color: '#77B8B9', mb: 2 }} />
-//               <Typography variant="h6">Pagos</Typography>
-//               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                 Gestiona cobros y facturación
-//               </Typography>
-//             </Paper>
-//           </Grid>
-
-//           {/* Tarjeta 4 */}
-//           <Grid item xs={12} sm={6} md={4}>
-//             <Paper elevation={3} sx={{
-//               p: 4,
-//               display: 'flex',
-//               flexDirection: 'column',
-//               alignItems: 'center',
-//               height: '200px'
-//             }}>
-//               <BarChartIcon sx={{ fontSize: 60, color: '#77B8B9', mb: 2 }} />
-//               <Typography variant="h6">Reportes</Typography>
-//               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                 Estadísticas e informes de ingresos
-//               </Typography>
-//             </Paper>
-//           </Grid>
-//         </Grid>
-//       </Grid>
-//     </Grid>
-//   )
-// }
-
-// export default Home;

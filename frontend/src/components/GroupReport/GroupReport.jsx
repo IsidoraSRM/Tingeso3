@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import reservationService from '../../services/reservation';
 import {
@@ -17,13 +17,7 @@ const GroupReport = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      fetchReport();
-    }
-  }, [startDate, endDate]);
-
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -35,7 +29,13 @@ const GroupReport = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchReport();
+    }
+  }, [startDate, endDate, fetchReport]);
 
   const formatCurrency = (value) => {
     return `$${value.toLocaleString()}`;
@@ -90,12 +90,14 @@ const GroupReport = () => {
         </Grid>
       </Box>
 
-      {loading ? (
+      {loading && (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
           <CircularProgress sx={{ color: '#77B8B9' }} />
           <Typography sx={{ ml: 2 }}>Cargando datos del reporte...</Typography>
         </Box>
-      ) : error ? (
+      )}
+      
+      {!loading && error && (
         <Box sx={{ p: 3, bgcolor: '#ffebee', borderRadius: 1, textAlign: 'center' }}>
           <Typography color="error">{error}</Typography>
           <Button 
@@ -107,14 +109,16 @@ const GroupReport = () => {
             Reintentar
           </Button>
         </Box>
-      ) : reportData ? (
+      )}
+      
+      {!loading && !error && reportData && (
         <TableContainer>
           <Table sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableCell sx={{ fontWeight: 'bold', width: '20%' }}>Rango de Personas</TableCell>
-                {reportData.months.map((month, index) => (
-                  <TableCell key={index} align="right" sx={{ fontWeight: 'bold' }}>
+                {reportData.months.map((month) => (
+                  <TableCell key={`month-${month}`} align="right" sx={{ fontWeight: 'bold' }}>
                     {month}
                   </TableCell>
                 ))}
@@ -125,13 +129,13 @@ const GroupReport = () => {
             </TableHead>
             <TableBody>
               {/* Filas de categorías por tamaño de grupo */}
-              {reportData.data.map((category, index) => (
-                <TableRow key={index} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
+              {reportData.data.map((category) => (
+                <TableRow key={`category-${category.name}`} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
                   <TableCell component="th" scope="row">
                     {category.name}
                   </TableCell>
                   {category.values.map((value, i) => (
-                    <TableCell key={i} align="right">
+                    <TableCell key={`value-${category.name}-${i}`} align="right">
                       {formatCurrency(value)}
                     </TableCell>
                   ))}
@@ -147,7 +151,7 @@ const GroupReport = () => {
                   Total Mensual
                 </TableCell>
                 {reportData.totalsByMonth.map((total, index) => (
-                  <TableCell key={index} align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell key={`total-month-${reportData.months[index] || index}`} align="right" sx={{ fontWeight: 'bold' }}>
                     {formatCurrency(total)}
                   </TableCell>
                 ))}
@@ -161,7 +165,9 @@ const GroupReport = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      ) : (
+      )}
+      
+      {!loading && !error && !reportData && (
         <Box display="flex" justifyContent="center" p={5} sx={{ bgcolor: '#f8f8f8', borderRadius: 1 }}>
           <Typography variant="body1" color="text.secondary">
             No hay datos disponibles para el rango de fechas seleccionado

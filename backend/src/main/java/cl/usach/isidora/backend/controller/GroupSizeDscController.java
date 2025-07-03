@@ -2,7 +2,6 @@ package cl.usach.isidora.backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,11 @@ import cl.usach.isidora.backend.services.GroupSizeDscService;
 @CrossOrigin
 public class GroupSizeDscController {
     
-    @Autowired
-    private GroupSizeDscService groupSizeDscService;
+    private final GroupSizeDscService groupSizeDscService;
+    
+    public GroupSizeDscController(GroupSizeDscService groupSizeDscService) {
+        this.groupSizeDscService = groupSizeDscService;
+    }
 
     @GetMapping("all")
     public List<GroupSizeDscEntity> getAllGroupSizeDsc() {

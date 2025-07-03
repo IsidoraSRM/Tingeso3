@@ -55,7 +55,7 @@ public class TariffServiceTest {
     }
     
     @Test
-    void getTariffEntityByMax_minutes_ShouldReturnCorrectTariff() {
+    void getTariffEntityByMaxMinutes_ShouldReturnCorrectTariff() {
         
         Integer minutes = 30;
         TariffEntity expectedTariff = new TariffEntity();
@@ -65,7 +65,7 @@ public class TariffServiceTest {
         when(tariffRepository.findByMaxMinutes(minutes)).thenReturn(expectedTariff);
         
         
-        TariffEntity actualTariff = tariffService.getTariffEntityByMax_minutes(minutes);
+        TariffEntity actualTariff = tariffService.getTariffEntityByMaxMinutes(minutes);
         
         
         assertEquals(expectedTariff, actualTariff);
@@ -73,7 +73,7 @@ public class TariffServiceTest {
     }
     
     @Test
-    void getTariffEntityByMax_minutes_WithNonExistentMinutes_ShouldHandleGracefully() {
+    void getTariffEntityByMaxMinutes_WithNonExistentMinutes_ShouldHandleGracefully() {
         
         Integer minutes = 45; // Asumiendo que no existe un tariff con 45 minutos
         TariffEntity expectedTariff = new TariffEntity();
@@ -83,7 +83,7 @@ public class TariffServiceTest {
         when(tariffRepository.findByMaxMinutes(minutes)).thenReturn(expectedTariff);
         
         
-        TariffEntity actualTariff = tariffService.getTariffEntityByMax_minutes(minutes);
+        TariffEntity actualTariff = tariffService.getTariffEntityByMaxMinutes(minutes);
         
         
         assertEquals(expectedTariff, actualTariff);

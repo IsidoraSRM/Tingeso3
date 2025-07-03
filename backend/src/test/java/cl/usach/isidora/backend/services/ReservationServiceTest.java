@@ -56,11 +56,9 @@ public class ReservationServiceTest {
     private CustomerEntity testCustomer1, testCustomer2;
     private TariffEntity testTariff;
     private List<CustomerEntity> testCustomers;
-    private List<FrequencyDscEntity> testFrequencyDscs;
-    private List<GroupSizeDscEntity> testGroupSizeDscs;
     
     @BeforeEach
-    public void setup() {
+    void setup() {
         // Configurar datos de prueba
         testCustomer1 = new CustomerEntity();
         testCustomer1.setId_customer(1L);
@@ -96,40 +94,10 @@ public class ReservationServiceTest {
         testTariff.setMaxMinutes(30);
         testTariff.setPrice(5000);
         testTariff.setTotal_duration(30);
-        
-        // Configurar descuentos por frecuencia
-        FrequencyDscEntity freqDsc1 = new FrequencyDscEntity();
-        freqDsc1.setIdFrequencyDsc(1L);
-        freqDsc1.setMinFrequency(1);
-        freqDsc1.setMaxFrequency(2);
-        freqDsc1.setDiscountPercentage(5.0);
-        
-        FrequencyDscEntity freqDsc2 = new FrequencyDscEntity();
-        freqDsc2.setIdFrequencyDsc(2L);
-        freqDsc2.setMinFrequency(3);
-        freqDsc2.setMaxFrequency(5);
-        freqDsc2.setDiscountPercentage(10.0);
-        
-        testFrequencyDscs = Arrays.asList(freqDsc1, freqDsc2);
-        
-        // Configurar descuentos por tamaño de grupo
-        GroupSizeDscEntity groupDsc1 = new GroupSizeDscEntity();
-        groupDsc1.setIdGroupSizeDsc(1L);
-        groupDsc1.setMinGroupSize(1);
-        groupDsc1.setMaxGroupSize(3);
-        groupDsc1.setDiscountPercentage(5.0);
-        
-        GroupSizeDscEntity groupDsc2 = new GroupSizeDscEntity();
-        groupDsc2.setIdGroupSizeDsc(2L);
-        groupDsc2.setMinGroupSize(4);
-        groupDsc2.setMaxGroupSize(6);
-        groupDsc2.setDiscountPercentage(10.0);
-        
-        testGroupSizeDscs = Arrays.asList(groupDsc1, groupDsc2);
     }
     
     @Test
-    public void testGetAllReservations() {
+    void testGetAllReservations() {
         
         when(reservationRepository.findAll()).thenReturn(Arrays.asList(testReservation));
         
@@ -143,7 +111,7 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testGetReservationById() {
+    void testGetReservationById() {
         
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(testReservation));
         when(reservationRepository.findById(2L)).thenReturn(Optional.empty());
@@ -161,7 +129,7 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testCreateReservationWithCustomers() {
+    void testCreateReservationWithCustomers() {
         
         LocalDate date = LocalDate.of(2024, 5, 1);
         Time startTime = Time.valueOf("15:00:00");
@@ -194,12 +162,9 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testCalculatePricing() {
+    void testCalculatePricing() {
         // Crear un spy del servicio
         ReservationService spyReservationService = spy(reservationService);
-        
-        when(groupSizeDscService.getAllGroupSizeDsc()).thenReturn(testGroupSizeDscs);
-        when(frequencyDscService.getAllFrequencyDsc()).thenReturn(testFrequencyDscs);
         
         // usar el spy para simular el comportamiento de los métodos
         doReturn(Arrays.asList(5.0, 5.0)).when(spyReservationService).getCustomerGroup(any(), any());
@@ -216,8 +181,6 @@ public class ReservationServiceTest {
         
         
         assertNotNull(result);
-        
-        assertNotNull(result);
         assertNotNull(result.getTotalAmount());
         assertNotNull(result.getIndividualDscs());
         assertNotNull(result.getIndividualPrices());
@@ -228,12 +191,14 @@ public class ReservationServiceTest {
         assertEquals(5.0, result.getIndividualDscs().get(0));
         assertEquals(10.0, result.getIndividualDscs().get(1));
         
-        verify(groupSizeDscService).getAllGroupSizeDsc();
-        verify(frequencyDscService).getAllFrequencyDsc();
+        // Verificar que se llamaron los métodos mockeados del spy
+        verify(spyReservationService).getCustomerGroup(any(), any());
+        verify(spyReservationService).getCustomerFreq(any(), any());
+        verify(spyReservationService).getCustomerBirthDay(any(), any());
     }
     
     @Test
-    public void testGetTariffByDuration_ExactMatch() {
+    void testGetTariffByDuration_ExactMatch() {
         
         int duration = 30;
         when(tariffRepository.findByMaxMinutes(duration)).thenReturn(testTariff);
@@ -247,7 +212,7 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testGetTariffByDuration_NoMatch() {
+    void testGetTariffByDuration_NoMatch() {
         
         int duration = 45;
         when(tariffRepository.findByMaxMinutes(duration)).thenReturn(null);
@@ -278,7 +243,7 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testGetCustomersByReservationId() {
+    void testGetCustomersByReservationId() {
         
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(testReservation));
         when(reservationRepository.findById(2L)).thenReturn(Optional.empty());
@@ -298,7 +263,7 @@ public class ReservationServiceTest {
     }
     
     @Test
-    public void testSendReservationMail() throws Exception {
+    void testSendReservationMail() throws Exception {
         
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(testReservation));
         

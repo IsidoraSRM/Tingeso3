@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Paper, Typography, Box, Grid, TextField, 
+  Paper, Typography, Grid, TextField, 
   FormControl, RadioGroup, FormControlLabel, Radio,
   Button
 } from '@mui/material';
@@ -51,14 +51,14 @@ const ReportType = () => {
 
   return (
     <Paper elevation={3} sx={{ marginTop: 4, p: 4, maxWidth: 500, mx: 'auto', bgcolor: '#fff' }}>
-      <h1 sx={{ color: '#77B8B9', mb: 3, textAlign: 'center' }}>
+      <Typography variant="h4" sx={{ color: '#77B8B9', mb: 3, textAlign: 'center' }}>
         Generar Reporte de Ingresos
-      </h1>
+      </Typography>
       
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3} direction="column">
           {/* Fecha de inicio */}
-          <Grid gridsize={12}>
+          <Grid size={12}>
             <TextField
               label="Fecha inicial"
               type="date"
@@ -67,12 +67,12 @@ const ReportType = () => {
               onChange={handleChange}
               fullWidth
               required
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
             />
           </Grid>
           
           {/* Fecha de fin */}
-          <Grid gridsize={12}>
+          <Grid size={12}>
             <TextField
               label="Fecha final"
               type="date"
@@ -81,12 +81,12 @@ const ReportType = () => {
               onChange={handleChange}
               fullWidth
               required
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
             />
           </Grid>
           
           {/* Tipo de reporte */}
-          <Grid gridsize={12}>
+          <Grid size={12}>
             <FormControl component="fieldset" required sx={{ width: '100%' }}>
               <Typography variant="subtitle1" gutterBottom>
                 Modelos de Reporte
@@ -111,7 +111,7 @@ const ReportType = () => {
           </Grid>
           
           {/* Botón enviar */}
-          <Grid gridsize={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Grid size={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button
               type="submit"
               variant="contained"

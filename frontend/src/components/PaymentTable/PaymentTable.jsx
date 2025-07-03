@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -60,14 +61,14 @@ const PaymentTable = ({ reservationId }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {customers.map((customer, index) => (
-            <TableRow key={index}>
+          {customers.map((customer) => (
+            <TableRow key={`${customer.email}-${customer.rut}`}>
               <TableCell>{date}</TableCell>
               <TableCell>{startTime}</TableCell>
               <TableCell>{`${customer.name} ${customer.lastname}`}</TableCell>
               <TableCell>{customer.email}</TableCell>
-              <TableCell align="right">- {ccyFormat(individualDscs[index])} %</TableCell>
-              <TableCell align="right">$ {ccyFormat(individualPrices[index])}</TableCell>
+              <TableCell align="right">- {ccyFormat(individualDscs[customers.indexOf(customer)])} %</TableCell>
+              <TableCell align="right">$ {ccyFormat(individualPrices[customers.indexOf(customer)])}</TableCell>
               <TableCell align="right"></TableCell>
             </TableRow>
           ))}
@@ -96,6 +97,11 @@ const PaymentTable = ({ reservationId }) => {
       </Table>
     </TableContainer>
   );
+};
+
+// Validación de props
+PaymentTable.propTypes = {
+  reservationId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
 
 export default PaymentTable;

@@ -2,15 +2,21 @@ package cl.usach.isidora.backend.services;
 
 import cl.usach.isidora.backend.entities.CustomerEntity;
 import cl.usach.isidora.backend.repositories.CustomerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 @Service
 public class CustomerService {
-    @Autowired
-    private CustomerRepository customerRepository;
+    
+    private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
+    private final CustomerRepository customerRepository;
+    
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
 
     public List<CustomerEntity> getAllCustomers() {
@@ -19,19 +25,17 @@ public class CustomerService {
 
     public void createCustomer(CustomerEntity customer) {
         customerRepository.save(customer);
-        System.out.println(customer);
+        logger.info("Cliente creado: {}", customer);
     }
 
     public long countFrequentCustomers(CustomerEntity customer,LocalDate reservationDate) {
-        LocalDate currentDate = LocalDate.now();
         long visitsInLast30Days = 0;
         List<CustomerEntity> customers = customerRepository.findAll();
         // Obtener todas las visitas del cliente
         // Calcular el rango de fechas
         LocalDate thirtyDaysAgo = reservationDate.minusDays(30);
-        List<CustomerEntity> customerVisits = customerRepository.findByRut(customer.getRut());
+        
         for (CustomerEntity c : customers){
-
             if(c.getRut().equals(customer.getRut())){
                 if(c.getVisitDate() != null) {
                     LocalDate visitDate = c.getVisitDate();
@@ -41,16 +45,14 @@ public class CustomerService {
                         visitsInLast30Days++;
                     }
                 } else {
-                    System.out.println("La fecha de visita es nula para el cliente con RUT: " + c.getRut());
-
+                    logger.warn("La fecha de visita es nula para el cliente con RUT: {}", c.getRut());
                 }
-
             }
         }
         // Contar las visitas dentro del mes actual
-        System.out.println("El cliente ha vistado: "+visitsInLast30Days);
+        logger.info("El cliente ha visitado: {}", visitsInLast30Days);
         return visitsInLast30Days;
-        }
+    }
 
 
     

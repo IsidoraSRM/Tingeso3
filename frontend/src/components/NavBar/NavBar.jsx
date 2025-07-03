@@ -11,38 +11,59 @@ const NavBar = () => {
         <NavLink to="/" className="navbar-title">
           KartingRM
         </NavLink>
-        <div 
+        <button 
           className="menu" 
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Abrir menú"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setMenuOpen(!menuOpen);
+            }
+          }}
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={menuOpen}
+          aria-controls="navbar-menu"
+          type="button"
+          style={{
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            padding: 0,
+            margin: 0,
+            outline: 'none'
+          }}
         >
           <span />
           <span />
           <span />
-        </div>
-        <ul className={`navbar-links${menuOpen ? ' open' : ''}`}>
+        </button>
+        <ul 
+          id="navbar-menu"
+          className={`navbar-links${menuOpen ? ' open' : ''}`}
+          aria-hidden={!menuOpen}
+        >
           <li>
-            <NavLink to="/reservation" className="navbar-link" activeClassName="active" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/reservation" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>
               Reservar
             </NavLink>
           </li>
           <li>
-            <NavLink to="/tariffs" className="navbar-link" activeClassName="active" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/tariffs" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>
               Tarifas
             </NavLink>
           </li>
           <li>
-            <NavLink to="/rack" className="navbar-link" activeClassName="active" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/rack" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>
               Rack
             </NavLink>
           </li>
           <li>
-            <NavLink to="/reports" className="navbar-link" activeClassName="active" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/reports" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>
               Reportes
             </NavLink>
           </li>
           <li>
-            <NavLink to="/contact" className="navbar-link" activeClassName="active" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/contact" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>
               Contacto
             </NavLink>
           </li>
