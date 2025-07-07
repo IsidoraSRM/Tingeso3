@@ -43,37 +43,43 @@ function MyCalendar() {
 
 */
   return (
-    <div className="calendar-container" style={{ margin: 'auto', marginTop: '30px', maxWidth: '1700px' ,backgroundColor: '#fff', padding: '10px'}}>
+    <div className="calendar-container" style={{ 
+      margin: 'auto', 
+      marginTop: '10px', 
+      maxWidth: '1200px',
+      borderRadius: '12px',
+      overflow: 'hidden'
+    }}>
       <FullCalendar  
-        eventBackgroundColor="rgba(201, 143, 81, 0.5)"  
-        eventBorderColor="rgba(201, 143, 81, 0.5)"       
-      plugins={[ dayGridPlugin,timeGridPlugin]}
-      initialView="dayGridMonth"
-      
-      slotMinTime="10:00:00"  // Hora de inicio
-      slotMaxTime="23:00:00"  // Hora de fin
+        eventBackgroundColor="#A3320A"  
+        eventBorderColor="#A3320A"       
+        plugins={[ dayGridPlugin,timeGridPlugin]}
+        initialView="dayGridMonth"
+        
+        slotMinTime="10:00:00"  // Hora de inicio
+        slotMaxTime="23:00:00"  // Hora de fin
         headerToolbar={{
           left: 'prev next today',
           center: 'title',
           right: 'dayGridMonth timeGridWeek'
         }}
-      events={events}
-      eventDidMount={(info) => {
-        info.el.setAttribute(
-          'title',
-          `Reserva: ${info.event.id}\nInicio: ${info.event.start.toLocaleString()}\nFin: ${info.event.end.toLocaleString()}`
-        );
-      }}
-      views={{
-        dayGridMonth: {
-          contentHeight: 800 
-        },
-        timeGridWeek: {
-          contentHeight: 700 
-        }
-      }}
-      
-    />
+        events={events}
+        eventDidMount={(info) => {
+          info.el.setAttribute(
+            'title',
+            `Reserva: ${info.event.id}\nInicio: ${info.event.start.toLocaleString()}\nFin: ${info.event.end.toLocaleString()}`
+          );
+        }}
+        views={{
+          dayGridMonth: {
+            contentHeight: 700 
+          },
+          timeGridWeek: {
+            contentHeight: 600 
+          }
+        }}
+        
+      />
     </div>
   );
 }

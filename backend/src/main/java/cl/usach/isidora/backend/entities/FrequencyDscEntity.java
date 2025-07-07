@@ -1,5 +1,6 @@
 package cl.usach.isidora.backend.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -17,7 +18,8 @@ import lombok.Setter;
 @Table(name = "FrequencyDsc")
 public class FrequencyDscEntity {
     @Id
-    private Long IdFrequencyDsc;
+    @Column(name="IdFrequencyDsc")
+    private Long idFrequencyDsc;
     private String frequencyType;
     private Integer minFrequency;
     private Integer maxFrequency;

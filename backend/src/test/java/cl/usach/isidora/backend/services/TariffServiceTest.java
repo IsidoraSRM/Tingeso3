@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 
 
-public class TariffServiceTest {
+class TariffServiceTest {
     
     @Mock
     private TariffRepository tariffRepository;

@@ -39,7 +39,7 @@ const PaymentTable = ({ reservationId }) => {
         marginTop: 3, 
         p: 4, 
         textAlign: 'center',
-        backgroundColor: 'rgba(244, 245, 245, 0.8)',
+        backgroundColor: 'rgba(163, 50, 10, 0.05)',
         border: '1px solid rgba(163, 50, 10, 0.2)'
       }}>
         <Typography 
@@ -78,7 +78,7 @@ const PaymentTable = ({ reservationId }) => {
     }}>
       <Box sx={{ 
         p: 2, 
-        backgroundColor: 'rgba(244, 245, 245, 0.8)',
+        backgroundColor: 'rgba(163, 50, 10, 0.05)',
         borderTopLeftRadius: 8,
         borderTopRightRadius: 8,
         borderBottom: '1px solid rgba(163, 50, 10, 0.2)'
@@ -204,7 +204,7 @@ const PaymentTable = ({ reservationId }) => {
                   align="center"
                   sx={{ 
                     fontFamily: "'Outfit', sans-serif",
-                    color: individualDscs?.[index] > 0 ? '#A3320A' : 'inherit',
+                    color: individualDscs?.[index] > 0 ? '#77B8B9' : 'inherit',
                     fontWeight: individualDscs?.[index] > 0 ? 600 : 400
                   }}
                 >

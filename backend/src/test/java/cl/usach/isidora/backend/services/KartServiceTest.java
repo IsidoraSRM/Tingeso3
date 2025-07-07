@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 
 
-public class KartServiceTest {
+class KartServiceTest {
     
     @InjectMocks
     private KartService kartService;
@@ -26,12 +26,12 @@ public class KartServiceTest {
     private KartRepository kartRepository;
     
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
     }
     
     @Test
-    public void testGetAllKarts() {
+    void testGetAllKarts() {
         
         List<KartEntity> expectedList = new ArrayList<>();
         KartEntity kart1 = new KartEntity();
@@ -52,7 +52,7 @@ public class KartServiceTest {
     }
     
     @Test
-    public void testGetAllKarts_EmptyList() {
+    void testGetAllKarts_EmptyList() {
         
         List<KartEntity> emptyList = new ArrayList<>();
         when(kartRepository.findAll()).thenReturn(emptyList);

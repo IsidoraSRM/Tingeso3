@@ -39,47 +39,166 @@ export default function PricingTable() {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" my={4}>
-        <CircularProgress color="primary" />
+        <CircularProgress sx={{ color: '#A3320A' }} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box my={4} textAlign="center">
-        <Typography color="error">{error}</Typography>
-      </Box>
+      <Paper sx={{ 
+        marginTop: 3, 
+        p: 4, 
+        textAlign: 'center',
+        backgroundColor: 'rgba(244, 245, 245, 0.8)',
+        border: '1px solid rgba(163, 50, 10, 0.2)',
+        borderRadius: 2
+      }}>
+        <Typography 
+          variant="h6"
+          sx={{ 
+            color: '#A3320A',
+            fontFamily: "'Outfit', sans-serif",
+            fontWeight: 600
+          }}
+        >
+          {error}
+        </Typography>
+      </Paper>
     );
   }
   return (
-    
-    <TableContainer component={Paper} sx={{ margin: 'auto', marginTop: 5, maxWidth: 1700 }}  >
-      <Table sx={{ minWidth: 650 }} aria-label="simple table"  >
-        <TableHead>
-          <TableRow>
-            <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }} >Número de vueltas o tiempo
-            máximo permitido</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }}>Precios Regulares</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '18px' }}>Duración total de la
-            reserva </TableCell>
-            
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {tariffs.map((tariff) => (
-            <TableRow
-              key={tariff.laps}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row" sx={{ fontSize: '16px' }} >
-                {tariff.laps} vueltas o máx {tariff.max_minutes} min
+    <Paper elevation={3} sx={{ 
+      margin: 'auto', 
+      marginTop: 5, 
+      maxWidth: 1200,
+      borderRadius: 2,
+      border: '2px solid #A3320A',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), 0 0 20px rgba(163, 50, 10, 0.3)'
+    }}>
+      <Box sx={{ 
+        p: 2, 
+        backgroundColor: '#f4f5f5a2',
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+        borderBottom: '1px solid rgba(163, 50, 10, 0.2)'
+      }}>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontWeight: 700, 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            textAlign: 'center'
+          }}
+        >
+          💰 Precios del Karting
+        </Typography>
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            color: '#303030',
+            opacity: 0.8,
+            textAlign: 'center',
+            mt: 1,
+            fontFamily: "'Outfit', sans-serif"
+          }}
+        >
+          Precios y duración de las experiencias disponibles
+        </Typography>
+      </Box>
+      
+      <TableContainer>
+        <Table sx={{ minWidth: 650 }} aria-label="tabla de tarifas de karting">
+          <TableHead>
+            <TableRow sx={{ backgroundColor: 'rgba(163, 50, 10, 0.1)' }}>
+              <TableCell 
+                align="center" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontSize: 16,
+                  color: '#303030',
+                  fontFamily: "'Outfit', sans-serif"
+                }}
+              >
+                Número de vueltas
               </TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px' }}>$ {tariff.price}</TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px' }}>{tariff.total_duration} min</TableCell>
+              <TableCell 
+                align="center" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontSize: 16,
+                  color: '#303030',
+                  fontFamily: "'Outfit', sans-serif"
+                }}
+              >
+                Precios Base
+              </TableCell>
+              <TableCell 
+                align="center" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontSize: 16,
+                  color: '#303030',
+                  fontFamily: "'Outfit', sans-serif"
+                }}
+              >
+                Duración total de la reserva
+              </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {tariffs.map((tariff, index) => (
+              <TableRow
+                key={tariff.laps || index}
+                sx={{ 
+                  '&:nth-of-type(odd)': { 
+                    backgroundColor: 'rgba(163, 50, 10, 0.02)' 
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(163, 50, 10, 0.05)'
+                  },
+                  '&:last-child td, &:last-child th': { border: 0 }
+                }}
+              >
+                <TableCell 
+                  component="th" 
+                  scope="row" 
+                  align="center"
+                  sx={{ 
+                    fontSize: '16px',
+                    fontFamily: "'Outfit', sans-serif",
+                    color: '#303030'
+                  }}
+                >
+                  {tariff.laps} vueltas
+                </TableCell>
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    fontSize: '16px',
+                    fontFamily: "'Outfit', sans-serif",
+                    color: '#303030',
+                    fontWeight: 600
+                  }}
+                >
+                  ${tariff.price?.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                </TableCell>
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    fontSize: '16px',
+                    fontFamily: "'Outfit', sans-serif",
+                    color: '#303030'
+                  }}
+                >
+                  {tariff.totalDuration} min
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 }

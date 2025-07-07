@@ -1,15 +1,16 @@
 
+import React from 'react';
+import { Container } from '@mui/material';
+import Calendar from '../../components/Calendar/Calendar';
 
-import React from 'react'
-import Calendar from '../../components/Calendar/Calendar'
 const Rack = () => {
-    
   return (
-    <div>
-       <Calendar  />
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      
+        <Calendar />
 
-    </div>
-  )
-}
+    </Container>
+  );
+};
 
-export default Rack
+export default Rack;

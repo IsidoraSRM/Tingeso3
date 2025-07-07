@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 
 
-public class FrequencyDscServiceTest {
+class FrequencyDscServiceTest {
     
     @InjectMocks
     private FrequencyDscService frequencyDscService;
@@ -26,12 +26,12 @@ public class FrequencyDscServiceTest {
     private FrequencyDscRepository frequencyDscRepository;
     
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
     }
     
     @Test
-    public void testGetAllFrequencyDsc() {
+    void testGetAllFrequencyDsc() {
         
         List<FrequencyDscEntity> expectedList = new ArrayList<>();
         FrequencyDscEntity entity1 = new FrequencyDscEntity();
@@ -52,7 +52,7 @@ public class FrequencyDscServiceTest {
     }
     
     @Test
-    public void testGetAllFrequencyDsc_EmptyList() {
+    void testGetAllFrequencyDsc_EmptyList() {
         
         List<FrequencyDscEntity> emptyList = new ArrayList<>();
         when(frequencyDscRepository.findAll()).thenReturn(emptyList);

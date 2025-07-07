@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ReservationServiceTest {
+class ReservationServiceTest {
     
     @Mock
     private ReservationRepository reservationRepository;
@@ -61,14 +61,14 @@ public class ReservationServiceTest {
     void setup() {
         // Configurar datos de prueba
         testCustomer1 = new CustomerEntity();
-        testCustomer1.setId_customer(1L);
+        testCustomer1.setIdCustomer(1L);
         testCustomer1.setName("Juan");
         testCustomer1.setLastname("Pérez");
         testCustomer1.setEmail("juan@example.com");
         testCustomer1.setBirthdate(LocalDate.of(1990, 4, 15));
         
         testCustomer2 = new CustomerEntity();
-        testCustomer2.setId_customer(2L);
+        testCustomer2.setIdCustomer(2L);
         testCustomer2.setName("María");
         testCustomer2.setLastname("González");
         testCustomer2.setEmail("maria@example.com");
@@ -77,7 +77,7 @@ public class ReservationServiceTest {
         testCustomers = Arrays.asList(testCustomer1, testCustomer2);
         
         testReservation = new ReservationEntity();
-        testReservation.setId_reservation(1L);
+        testReservation.setIdReservation(1L);
         testReservation.setDate(LocalDate.of(2024, 4, 15));
         testReservation.setStartTime(Time.valueOf("14:00:00"));
         testReservation.setEndTime(Time.valueOf("14:30:00"));
@@ -89,11 +89,11 @@ public class ReservationServiceTest {
         testReservation.setIndividualPrices(Arrays.asList(4500.0, 4000.0));
         
         testTariff = new TariffEntity();
-        testTariff.setId_tariff(1L);
+        testTariff.setIdTariff(1L);
         testTariff.setLaps(10);
         testTariff.setMaxMinutes(30);
         testTariff.setPrice(5000);
-        testTariff.setTotal_duration(30);
+        testTariff.setTotalDuration(30);
     }
     
     @Test
@@ -106,7 +106,7 @@ public class ReservationServiceTest {
         
         
         assertEquals(1, result.size());
-        assertEquals(testReservation.getId_reservation(), result.get(0).getId_reservation());
+        assertEquals(testReservation.getIdReservation(), result.get(0).getIdReservation());
         verify(reservationRepository).findAll();
     }
     
@@ -122,7 +122,7 @@ public class ReservationServiceTest {
         
         
         assertNotNull(found);
-        assertEquals(1L, found.getId_reservation());
+        assertEquals(1L, found.getIdReservation());
         assertNull(notFound);
         verify(reservationRepository).findById(1L);
         verify(reservationRepository).findById(2L);
@@ -140,7 +140,7 @@ public class ReservationServiceTest {
         when(tariffRepository.findByMaxMinutes(duration)).thenReturn(testTariff);
         when(reservationRepository.save(any(ReservationEntity.class))).thenAnswer(invocation -> {
             ReservationEntity savedReservation = invocation.getArgument(0);
-            savedReservation.setId_reservation(1L);
+            savedReservation.setIdReservation(1L);
             return savedReservation;
         });
         
@@ -172,7 +172,7 @@ public class ReservationServiceTest {
         doReturn(Arrays.asList(0.0, 0.0)).when(spyReservationService).getCustomerBirthDay(any(), any());
         
         ReservationEntity reservation = new ReservationEntity();
-        reservation.setId_reservation(3L);
+        reservation.setIdReservation(3L);
         reservation.setBaseTariff(5000);
         reservation.setCustomers(testCustomers);
         
@@ -219,13 +219,13 @@ public class ReservationServiceTest {
         
         List<TariffEntity> allTariffs = new ArrayList<>();
         TariffEntity tariff1 = new TariffEntity();
-        tariff1.setId_tariff(1L);
-        tariff1.setTotal_duration(30);
+        tariff1.setIdTariff(1L);
+        tariff1.setTotalDuration(30);
         tariff1.setPrice(5000);
         
         TariffEntity tariff2 = new TariffEntity();
-        tariff2.setId_tariff(2L);
-        tariff2.setTotal_duration(60);
+        tariff2.setIdTariff(2L);
+        tariff2.setTotalDuration(60);
         tariff2.setPrice(8000);
         
         allTariffs.add(tariff1);

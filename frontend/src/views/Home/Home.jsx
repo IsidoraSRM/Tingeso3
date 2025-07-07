@@ -25,7 +25,7 @@ useEffect(() => {
             }}
           >
             {/* Contenido de bienvenida */}
-            <Typography variant="h3" sx={{ color: '#303030', mb: 2, fontWeight: 800 }}>
+            <Typography variant="h3" sx={{ color: '#A3320A', mb: 2, fontWeight: 800 }}>
               ¡Bienvenido a 
               KartingRM!
             </Typography>

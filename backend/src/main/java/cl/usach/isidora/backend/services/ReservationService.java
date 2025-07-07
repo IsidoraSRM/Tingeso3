@@ -48,6 +48,8 @@ import java.util.Optional;
 public class ReservationService {
     
     private static final Logger logger = LoggerFactory.getLogger(ReservationService.class);
+    private static final String VALUES_KEY = "values";
+    
     private final ReservationRepository reservationRepository;
     private final CustomerRepository customerRepository;
     private final CustomerService customerService;
@@ -93,7 +95,7 @@ public class ReservationService {
         // Guardar los clientes si no existen
         customers.forEach(customer -> {
             customer.setVisitDate(date); // Asignar la fecha de la reserva
-            if (customer.getId_customer() == null) {
+            if (customer.getIdCustomer() == null) {
                 customerRepository.save(customer); // Guardar cliente si no existe
             }
         });
@@ -127,7 +129,7 @@ public class ReservationService {
         // guardar a los clientes
         customers.forEach(customer -> {
             customer.setVisitDate(date);
-            if (customer.getId_customer() == null) {
+            if (customer.getIdCustomer() == null) {
                 customerRepository.save(customer);
             }
         });
@@ -149,10 +151,10 @@ public class ReservationService {
         }
         // guardar reserva inicial, sin los descuentos
         reservation = reservationRepository.save(reservation);
-        
+        logger.info("reserva creada, siguiente paso calcular precios");
         // calcular precios de la reserva
         calculatePricing(reservation);
-        
+        logger.info("calculos de reserva hechos, pasando a guardar reserva");
         // guardar la reserva actualizada
         return reservationRepository.save(reservation);
     }
@@ -324,10 +326,10 @@ public class ReservationService {
     if (!tariffs.isEmpty()) {
         // Ordenar y encontrar la tarifa más cercana
         TariffEntity closest = tariffs.get(0);
-        int minDiff = Math.abs(closest.getTotal_duration() - duration);
+        int minDiff = Math.abs(closest.getTotalDuration() - duration);
         
         for (TariffEntity tariff : tariffs) {
-            int diff = Math.abs(tariff.getTotal_duration() - duration);
+            int diff = Math.abs(tariff.getTotalDuration() - duration);
             if (diff < minDiff) {
                 minDiff = diff;
                 closest = tariff;
@@ -335,7 +337,7 @@ public class ReservationService {
         }
         
         logger.info("No hay tarifa exacta. Usando la más cercana: {} minutos, precio: {}", 
-                          closest.getTotal_duration(), closest.getPrice());
+                          closest.getTotalDuration(), closest.getPrice());
         return closest.getPrice();
     }
     
@@ -530,7 +532,7 @@ public class ReservationService {
             helper.setText(content);
             
             // Adjuntar el PDF
-            helper.addAttachment("reserva_" + reservation.getId_reservation() + ".pdf", 
+            helper.addAttachment("reserva_" + reservation.getIdReservation() + ".pdf",
                             new ByteArrayResource(pdfBytes));
             
             // Enviar el correo
@@ -559,7 +561,7 @@ public class ReservationService {
         List<Map<String, Object>> categories = tariffs.stream()
             .map(tariff -> {
                 Map<String, Object> category = new HashMap<>();
-                category.put("id", tariff.getId_tariff());
+                category.put("id", tariff.getIdTariff());
                 category.put("name", tariff.getLaps() + " vueltas / " + tariff.getMaxMinutes() + " minutos");
                 category.put("laps", tariff.getLaps());
                 category.put("minutes", tariff.getMaxMinutes());
@@ -579,7 +581,7 @@ public class ReservationService {
             for (YearMonth month : months) {
                 monthlyRevenue.put(month, 0.0);
             }
-            tariffMonthlyRevenue.put(tariff.getId_tariff(), monthlyRevenue);
+            tariffMonthlyRevenue.put(tariff.getIdTariff(), monthlyRevenue);
         }
         
         // Procesar reservas y agrupar ingresos
@@ -591,7 +593,7 @@ public class ReservationService {
                     .findFirst();
                 
                 if (matchingTariff.isPresent()) {
-                    Long tariffId = matchingTariff.get().getId_tariff();
+                    Long tariffId = matchingTariff.get().getIdTariff();
                     YearMonth month = YearMonth.from(reservation.getDate());
                     
                     // Actualizar ingresos para esta tarifa y este mes
@@ -624,7 +626,7 @@ public class ReservationService {
             }
             
             Map<String, Object> categoryData = new HashMap<>(category);
-            categoryData.put("values", values);
+            categoryData.put(VALUES_KEY, values);
             categoryData.put("total", categoryTotal);
             reportData.add(categoryData);
         }
@@ -771,7 +773,7 @@ public class ReservationService {
             }
             
             Map<String, Object> categoryData = new HashMap<>(category);
-            categoryData.put("values", values);
+            categoryData.put(VALUES_KEY, values);
             categoryData.put("total", categoryTotal);
             reportData.add(categoryData);
         }
@@ -793,7 +795,7 @@ public class ReservationService {
         double grandTotal = 0.0;
         
         for (Map<String, Object> categoryData : reportData) {
-            double[] values = (double[]) categoryData.get("values");
+            double[] values = (double[]) categoryData.get(VALUES_KEY);
             for (int i = 0; i < values.length; i++) {
                 totalsByMonth[i] += values[i];
                 grandTotal += values[i];

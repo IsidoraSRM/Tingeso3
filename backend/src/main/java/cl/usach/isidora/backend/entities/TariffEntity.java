@@ -16,11 +16,13 @@ import lombok.Setter;
 public class TariffEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_tariff;
+    @Column(name = "id_tariff")
+    private Long idTariff;
     private Integer laps;
     @Column(name = "max_minutes")
     private Integer maxMinutes;
     private Integer price;
-    private Integer total_duration;
+    @Column(name = "total_duration")
+    private Integer totalDuration;
 
 }

@@ -31,7 +31,7 @@ public class KartController {
         logger.info("Datos recuperados: ");
         karts.forEach(k -> logger.info(
                 "ID: {}, Code: {}, Model: {}",
-                k.getId_kart(), k.getCode(), k.getModel()
+                k.getIdKart(), k.getCode(), k.getModel()
         ));
         return karts;
     }

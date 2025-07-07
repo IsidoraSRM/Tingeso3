@@ -1,6 +1,6 @@
 package cl.usach.isidora.backend.controller;
 
-import cl.usach.isidora.backend.Dto.ReservationRequestDTO;
+import cl.usach.isidora.backend.dto.ReservationRequestDTO;
 import cl.usach.isidora.backend.entities.CustomerEntity;
 import cl.usach.isidora.backend.entities.ReservationEntity;
 import cl.usach.isidora.backend.repositories.ReservationRepository;
@@ -93,7 +93,7 @@ public class ReservationController {
         ReservationEntity reservation = reservationService.getReservationById(id);
         if (reservation == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "No se encontró la reserva con ID: " + id));
+                .body(Map.of("ERROR", "No se encontró ninguna Reserva con ID: " + id));
         }
         return ResponseEntity.ok(reservation);
     }
@@ -103,7 +103,7 @@ public class ReservationController {
         ReservationEntity reservation = reservationService.getReservationById(id);
         if (reservation == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "No se encontró la reserva con ID: " + id));
+                .body(Map.of("[error]", "No se encontró la reserva con ID: " + id));
         }
         List<CustomerEntity> customers = reservation.getCustomers();
         return ResponseEntity.ok(customers);
@@ -117,7 +117,7 @@ public class ReservationController {
             ReservationEntity reservation = reservationService.getReservationById(id);
             if (reservation == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "No se encontró la reserva con ID: " + id));
+                    .body(Map.of("Error", "No se encontró la reserva con ID: " + id));
             }
             
             // Enviar los correos de confirmación
@@ -130,7 +130,7 @@ public class ReservationController {
         } catch (Exception e) {
             logger.error("Error al enviar correos para reserva ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error al enviar correos: " + e.getMessage()));
+                .body(Map.of("Advertencia", "Error al enviar correos: " + e.getMessage()));
         }
     }
 

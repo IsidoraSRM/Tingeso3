@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 public class CustomerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_customer;
+    @Column(name="id_customer")
+    private Long idCustomer;
 
     private String name;
     private String lastname;

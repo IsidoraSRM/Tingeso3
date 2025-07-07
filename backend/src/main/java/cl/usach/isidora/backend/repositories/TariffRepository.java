@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TariffRepository extends JpaRepository<TariffEntity, Long> {
 
-    TariffEntity findByMaxMinutes(Integer max_minutes);
+    TariffEntity findByMaxMinutes(Integer maxMinutes);
 }

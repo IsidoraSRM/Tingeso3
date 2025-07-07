@@ -1,4 +1,4 @@
-package cl.usach.isidora.backend.Dto;
+package cl.usach.isidora.backend.dto;
 
 import cl.usach.isidora.backend.entities.CustomerEntity;
 

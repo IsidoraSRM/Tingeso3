@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 
 
-public class GroupSizeDscServiceTest {
+class GroupSizeDscServiceTest {
     
     @Mock
     private GroupSizeDscRepository groupSizeDscRepository;
