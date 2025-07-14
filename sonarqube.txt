@@ -1,0 +1,16 @@
+Inciar sonarqube: en la ruta de bin/…/windows8464
+start sonarquebe.bat
+
+usuario:
+admin
+
+contraseña:
+UtphgCRH9ACRfL3*
+
+comando análisis sonarquebe Backend: 
+mvn clean verify sonar:sonar -Dsonar.projectKey=Tingeso3 -Dsonar.projectName='Tingeso3' -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_f4ec5a6d5bb250486f02bdf5748c0db4c55546bc
+
+
+
+para frontend:
+sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_ab509a0a9c4f3c4e49be44b9dbd7789c7b7ec537 -Dsonar.projectKey=Tingeso3-frontend
