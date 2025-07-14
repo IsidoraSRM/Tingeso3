@@ -64,15 +64,29 @@ public class ReservationController {
         );
     }
     @PostMapping("/create2")
-    public ReservationEntity createReservation2(@RequestBody ReservationRequestDTO request) {
-
-        return reservationService.createReservationWithPricing(
-                request.getDate(),
-                request.getStartTime(),
-                request.getDuration(),
-                request.getGroupSize(),
-                request.getCustomers()
-        );
+    public ResponseEntity<Object> createReservation2(@RequestBody ReservationRequestDTO request) {
+        try {
+            logger.info("Creando reserva con pricing - Date: {}, StartTime: {}, Duration: {}, GroupSize: {}, Customers: {}", 
+                       request.getDate(), request.getStartTime(), request.getDuration(), 
+                       request.getGroupSize(), request.getCustomers() != null ? request.getCustomers().size() : 0);
+            
+            ReservationEntity reservation = reservationService.createReservationWithPricing(
+                    request.getDate(),
+                    request.getStartTime(),
+                    request.getDuration(),
+                    request.getGroupSize(),
+                    request.getCustomers()
+            );
+            
+            logger.info("Reserva creada exitosamente con ID: {}", reservation.getIdReservation());
+            return ResponseEntity.ok(reservation);
+            
+        } catch (Exception e) {
+            logger.error("Error al crear reserva con pricing", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error al crear reserva: " + e.getMessage(),
+                           "details", e.getClass().getSimpleName()));
+        }
     }
 
     @GetMapping("/{id}/pricing")

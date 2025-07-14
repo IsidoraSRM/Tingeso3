@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, TextField, Alert, Snackbar, Stepper, Step, StepLabel, Box, Typography, IconButton } from '@mui/material';
+import { 
+  Button, TextField, Alert, Snackbar, Stepper, Step, StepLabel, Box, Typography, IconButton,
+  Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -39,6 +42,8 @@ const CustomerFrom = () => {
   const [tariffs, setTariffs] = useState([]);
   const [reservationId, setReservationId] = useState(null);
   const [allReservations, setAllReservations] = useState([]);
+  const [showGroupAlert, setShowGroupAlert] = useState(false);
+  const [autoFillAccepted, setAutoFillAccepted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -116,16 +121,29 @@ const handleConfirmation = async () => {
     if (name === 'groupSize') {
       const newGroupSize = parseInt(value, 10) || 1;
       const updatedCustomers = [...formData.customers];
+      
       if (newGroupSize > updatedCustomers.length) {
         for (let i = updatedCustomers.length; i < newGroupSize; i++) {
-          updatedCustomers.push({
-            name: '',
-            lastname: '',
-            rut: '',
-            email: '',
-            phone: '',
-            birthdate: '',
-          });
+          // Auto-relleno para clientes adicionales si está aceptado
+          if (autoFillAccepted && i > 0) {
+            updatedCustomers.push({
+              name: 'Cliente',
+              lastname: 'Acompañante',
+              rut: '', // RUT queda vacío para ser llenado manualmente
+              email: 'acompanante@ejemplo.com',
+              phone: '999999999',
+              birthdate: '1990-01-01',
+            });
+          } else {
+            updatedCustomers.push({
+              name: '',
+              lastname: '',
+              rut: '',
+              email: '',
+              phone: '',
+              birthdate: '',
+            });
+          }
         }
       } else if (newGroupSize < updatedCustomers.length) {
         updatedCustomers.splice(newGroupSize);
@@ -156,6 +174,17 @@ const handleConfirmation = async () => {
     // Validación para exactamente 9 números
     const phoneRegex = /^\d{9}$/;
     return phoneRegex.test(phone);
+  };
+
+  // Funciones para manejar la alerta de autocompletado
+  const handleAcceptAutoFill = () => {
+    // Mostrar la alerta informativa antes de activar el autocompletado
+    setShowGroupAlert(true);
+  };
+
+  const handleRejectAutoFill = () => {
+    setAutoFillAccepted(false);
+    setShowGroupAlert(false);
   };
 
   const handleCustomerChange = (index, e) => {
@@ -232,9 +261,15 @@ const handleConfirmation = async () => {
       return Boolean(formData.date && formData.duration && formData.startTime && formData.groupSize);
     }
     if (activeStep === 1) {
-      return Boolean(formData.customers.every(
+      // Verificar que todos los campos estén completos
+      const allFieldsComplete = formData.customers.every(
         c => c.name && c.lastname && c.rut && c.email && c.phone && c.birthdate
-      ));
+      );
+      
+      // Verificar que no haya errores de validación
+      const hasValidationErrors = Object.keys(fieldErrors).some(key => fieldErrors[key] !== '');
+      
+      return Boolean(allFieldsComplete && !hasValidationErrors);
     }
     return Boolean(true);
   };
@@ -242,33 +277,81 @@ const handleConfirmation = async () => {
   // Validación detallada con mensajes específicos
   const getStepValidationMessage = () => {
     if (activeStep === 0) {
-      const missing = [];
-      if (!formData.date) missing.push('fecha');
-      if (!formData.duration) missing.push('duración');
-      if (!formData.startTime) missing.push('hora de inicio');
-      if (!formData.groupSize) missing.push('tamaño del grupo');
-      
-      if (missing.length > 0) {
-        return `Por favor complete: ${missing.join(', ')}`;
-      }
+      return getStep0ValidationMessage();
     }
     if (activeStep === 1) {
-      const incompleteCustomers = formData.customers.map((customer, index) => {
-        const missing = [];
-        if (!customer.name) missing.push('nombre');
-        if (!customer.lastname) missing.push('apellido');
-        if (!customer.rut) missing.push('RUT');
-        if (!customer.email) missing.push('email');
-        if (!customer.phone) missing.push('teléfono');
-        if (!customer.birthdate) missing.push('fecha de nacimiento');
-        
-        return missing.length > 0 ? { index: index + 1, missing } : null;
-      }).filter(Boolean);
-      
-      if (incompleteCustomers.length > 0) {
-        const firstIncomplete = incompleteCustomers[0];
-        return `Cliente ${firstIncomplete.index}: complete ${firstIncomplete.missing.join(', ')}`;
+      return getStep1ValidationMessage();
+    }
+    return '';
+  };
+
+  const getStep0ValidationMessage = () => {
+    const missing = [];
+    if (!formData.date) missing.push('fecha');
+    if (!formData.duration) missing.push('duración');
+    if (!formData.startTime) missing.push('hora de inicio');
+    if (!formData.groupSize) missing.push('tamaño del grupo');
+    
+    if (missing.length > 0) {
+      return `Por favor complete: ${missing.join(', ')}`;
+    }
+    return '';
+  };
+
+  const getStep1ValidationMessage = () => {
+    // Verificar campos incompletos
+    const incompleteMessage = getIncompleteFieldsMessage();
+    if (incompleteMessage) return incompleteMessage;
+    
+    // Verificar errores de validación
+    return getValidationErrorMessage();
+  };
+
+  const getIncompleteFieldsMessage = () => {
+    const incompleteCustomers = formData.customers.map((customer, index) => {
+      const missing = [];
+      if (!customer.name) missing.push('nombre');
+      if (!customer.lastname) missing.push('apellido');
+      if (!customer.rut) {
+        // Mensaje específico para RUT dependiendo si es auto-rellenado o no
+        if (index > 0 && formData.groupSize > 1) {
+          missing.push('RUT (obligatorio)');
+        } else {
+          missing.push('RUT');
+        }
       }
+      if (!customer.email) missing.push('email');
+      if (!customer.phone) missing.push('teléfono');
+      if (!customer.birthdate) missing.push('fecha de nacimiento');
+      
+      return missing.length > 0 ? { index: index + 1, missing } : null;
+    }).filter(Boolean);
+    
+    if (incompleteCustomers.length > 0) {
+      const firstIncomplete = incompleteCustomers[0];
+      return `Cliente ${firstIncomplete.index}: complete ${firstIncomplete.missing.join(', ')}`;
+    }
+    return '';
+  };
+
+  const getValidationErrorMessage = () => {
+    const validationErrors = Object.keys(fieldErrors).filter(key => fieldErrors[key] !== '');
+    if (validationErrors.length > 0) {
+      const firstErrorKey = validationErrors[0];
+      const regex = /(.+)_(\d+)$/;
+      const match = regex.exec(firstErrorKey);
+      if (match) {
+        const fieldName = match[1];
+        const customerIndex = parseInt(match[2]) + 1;
+        const fieldDisplayName = {
+          'email': 'email',
+          'rut': 'RUT',
+          'phone': 'teléfono'
+        }[fieldName] || fieldName;
+        
+        return `Cliente ${customerIndex}: Corrija el formato del ${fieldDisplayName}`;
+      }
+      return 'Por favor corrija los errores de validación antes de continuar';
     }
     return '';
   };
@@ -308,6 +391,36 @@ const handleConfirmation = async () => {
         message: `Cliente ${firstIncomplete.index}: Por favor complete los campos: ${firstIncomplete.missing.join(', ')}`,
         severity: 'warning'
       });
+      return;
+    }
+    
+    // Validación de errores de formato
+    const validationErrors = Object.keys(fieldErrors).filter(key => fieldErrors[key] !== '');
+    if (validationErrors.length > 0) {
+      const firstErrorKey = validationErrors[0];
+      const regex = /(.+)_(\d+)$/;
+      const match = regex.exec(firstErrorKey);
+      if (match) {
+        const fieldName = match[1];
+        const customerIndex = parseInt(match[2]) + 1;
+        const fieldDisplayName = {
+          'email': 'email',
+          'rut': 'RUT',
+          'phone': 'teléfono'
+        }[fieldName] || fieldName;
+        
+        setNotification({
+          open: true,
+          message: `Cliente ${customerIndex}: Por favor corrija el formato del ${fieldDisplayName}`,
+          severity: 'error'
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: 'Por favor corrija los errores de validación antes de continuar',
+          severity: 'error'
+        });
+      }
       return;
     }
     
@@ -1006,7 +1119,8 @@ const handleConfirmation = async () => {
           {activeStep === 1 && (
             <>
               {formData.customers.map((customer, index) => (
-                <div key={`customer-form-${index}-${formData.customers.length}`} className="customerFields">
+                <React.Fragment key={`customer-form-${index}-${formData.customers.length}`}>
+                  <div className="customerFields">
                   <Typography 
                     variant="h6" 
                     sx={{
@@ -1152,7 +1266,7 @@ const handleConfirmation = async () => {
                     }}
                   />
                   <TextField
-                    label="Rut"
+                    label={index > 0 && formData.groupSize > 1 ? "Rut (Obligatorio)" : "Rut"}
                     name="rut"
                     variant="outlined"
                     fullWidth
@@ -1160,7 +1274,13 @@ const handleConfirmation = async () => {
                     value={customer.rut}
                     onChange={(e) => handleCustomerChange(index, e)}
                     error={Boolean(fieldErrors[`rut_${index}`])}
-                    helperText={fieldErrors[`rut_${index}`] || 'Ej: 12345678-9'}
+                    helperText={
+                      fieldErrors[`rut_${index}`] || 
+                      (index > 0 && formData.groupSize > 1 ? 
+                        '⚠️ Obligatorio: Ej: 12345678-9' : 
+                        'Ej: 12345678-9'
+                      )
+                    }
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: '#ffffff',
@@ -1297,6 +1417,78 @@ const handleConfirmation = async () => {
                     }}
                   />
                 </div>
+                
+                {/* Opción de autocompletado solo después del Cliente 1 */}
+                {index === 0 && formData.groupSize > 1 && (
+                  <Box sx={{ 
+                    mt: 2, 
+                    p: 2, 
+                    backgroundColor: 'rgba(163, 50, 10, 0.05)', 
+                    borderRadius: 2,
+                    border: '1px solid rgba(163, 50, 10, 0.2)',
+                    textAlign: 'center'
+                  }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#303030', 
+                        fontFamily: "'Outfit', sans-serif",
+                        mb: 2,
+                        fontWeight: 500
+                      }}
+                    >
+                      🚀 ¿Autocompletar datos de clientes adicionales?
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleAcceptAutoFill}
+                        disabled={autoFillAccepted}
+                        sx={{
+                          backgroundColor: autoFillAccepted ? '#4caf50' : '#A3320A',
+                          color: '#E1D5D5',
+                          fontFamily: "'Outfit', sans-serif",
+                          '&:hover': {
+                            backgroundColor: autoFillAccepted ? '#4caf50' : '#8B2C09'
+                          }
+                        }}
+                      >
+                        {autoFillAccepted ? '✅ Activado' : '✅ Sí, autocompletar'}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleRejectAutoFill}
+                        disabled={!autoFillAccepted}
+                        sx={{
+                          borderColor: '#A3320A',
+                          color: '#A3320A',
+                          fontFamily: "'Outfit', sans-serif",
+                          '&:hover': {
+                            borderColor: '#A3320A',
+                            backgroundColor: 'rgba(163, 50, 10, 0.05)'
+                          }
+                        }}
+                      >
+                        ❌ No, llenar manualmente
+                      </Button>
+                    </Box>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: '#303030', 
+                        fontFamily: "'Outfit', sans-serif",
+                        opacity: 0.7,
+                        mt: 1,
+                        display: 'block'
+                      }}
+                    >
+                      Solo lo clientes con rut y fecha de cumpleaños ingresados se considerarán para descuentos de frequencia y cumpleaños
+                    </Typography>
+                  </Box>
+                )}
+                </React.Fragment>
               ))}
             </>
           )}
@@ -1469,27 +1661,47 @@ const handleConfirmation = async () => {
 
         {/* Botones de navegación */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid rgba(163, 50, 10, 0.2)' }}>
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-            variant="outlined"
-            sx={{
-              minWidth: 120,
-              borderColor: '#A3320A',
-              color: '#A3320A',
-              fontFamily: "'Outfit', sans-serif",
-              fontWeight: 500,
-              '&:hover': {
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              variant="outlined"
+              sx={{
+                minWidth: 120,
                 borderColor: '#A3320A',
-                backgroundColor: 'rgba(163, 50, 10, 0.05)'
-              },
-              '&:disabled': {
-                opacity: 0.5
-              }
-            }}
-          >
-            ← Atrás
-          </Button>
+                color: '#A3320A',
+                fontFamily: "'Outfit', sans-serif",
+                fontWeight: 500,
+                '&:hover': {
+                  borderColor: '#A3320A',
+                  backgroundColor: 'rgba(163, 50, 10, 0.05)'
+                },
+                '&:disabled': {
+                  opacity: 0.5
+                }
+              }}
+            >
+              ← Atrás
+            </Button>
+            
+            <Button
+              onClick={() => navigate('/')}
+              variant="outlined"
+              sx={{
+                minWidth: 120,
+                borderColor: '#dc3545',
+                color: '#dc3545',
+                fontFamily: "'Outfit', sans-serif",
+                fontWeight: 500,
+                '&:hover': {
+                  borderColor: '#dc3545',
+                  backgroundColor: 'rgba(220, 53, 69, 0.05)'
+                }
+              }}
+            >
+              ❌ Cancelar
+            </Button>
+          </Box>
           
           {/* Información de progreso */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1569,7 +1781,7 @@ const handleConfirmation = async () => {
       </form>
       <Snackbar 
         open={notification.open} 
-        autoHideDuration={6000} 
+        autoHideDuration={8000} 
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
@@ -1577,6 +1789,104 @@ const handleConfirmation = async () => {
           {notification.message}
         </Alert>
       </Snackbar>
+
+      {/* Alerta informativa para reservas de grupo */}
+      <Dialog 
+        open={showGroupAlert} 
+        onClose={() => setShowGroupAlert(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          backgroundColor: 'rgba(163, 50, 10, 0.1)',
+          color: '#A3320A',
+          fontFamily: "'Outfit', sans-serif",
+          fontWeight: 600,
+          textAlign: 'center'
+        }}>
+          💡 Información Importante - Reserva de Grupo
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <DialogContentText sx={{ 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            lineHeight: 1.6,
+            mb: 2,
+            textAlign: 'center'
+          }}>
+            <strong>Información importante sobre reservas de grupo:</strong>
+          </DialogContentText>
+          <DialogContentText sx={{ 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            lineHeight: 1.6,
+            mb: 1
+          }}>
+            • <strong>Es obligatorio completar el RUT de todos los participantes</strong>
+          </DialogContentText>
+          <DialogContentText sx={{ 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            lineHeight: 1.6,
+            mb: 1
+          }}>
+            • Puede elegir autocompletar los clientes adicionales con datos por defecto
+          </DialogContentText>
+          <DialogContentText sx={{ 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            lineHeight: 1.6,
+            mb: 1
+          }}>
+            • <strong>Los descuentos y promociones se aplican por el rut de cada integrante</strong>
+          </DialogContentText>
+          <DialogContentText sx={{ 
+            color: '#303030',
+            fontFamily: "'Outfit', sans-serif",
+            lineHeight: 1.6
+          }}>
+            • Todos los campos pueden modificarse si lo desea
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, justifyContent: 'center', gap: 2 }}>
+          <Button 
+            onClick={() => {
+              setShowGroupAlert(false);
+              setAutoFillAccepted(true);
+              
+              // Aplicar autocompletado a clientes existentes (excepto el primero)
+              const updatedCustomers = [...formData.customers];
+              for (let i = 1; i < updatedCustomers.length; i++) {
+                if (!updatedCustomers[i].name || updatedCustomers[i].name === '') {
+                  updatedCustomers[i] = {
+                    ...updatedCustomers[i],
+                    name: 'Cliente',
+                    lastname: 'Acompañante',
+                    email: updatedCustomers[i].email || 'acompanante@ejemplo.com',
+                    phone: updatedCustomers[i].phone || '999999999',
+                    birthdate: updatedCustomers[i].birthdate || '1990-01-01',
+                    // Mantener RUT vacío para que sea obligatorio llenarlo
+                  };
+                }
+              }
+              setFormData({ ...formData, customers: updatedCustomers });
+            }}
+            sx={{
+              backgroundColor: '#A3320A',
+              color: '#E1D5D5',
+              fontFamily: "'Outfit', sans-serif",
+              px: 4,
+              '&:hover': {
+                backgroundColor: '#8B2C09'
+              }
+            }}
+            variant="contained"
+            size="large"
+          >
+            ✅ Entendido, activar autocompletado
+          </Button>
+        </DialogActions>
+      </Dialog>
       </div>
     </LocalizationProvider>
   );
